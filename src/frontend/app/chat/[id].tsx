@@ -22,7 +22,7 @@ import Constants from "expo-constants";
 import api from "@/types/api";
 
 const ChatScreen = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const { id, username, user_id, itemTitle, receiver_id, item_id } =
     useLocalSearchParams();
   const itemId = typeof item_id === "string" ? item_id : "";
@@ -44,7 +44,7 @@ const ChatScreen = () => {
     // connect to websocket
     setMessages([]);
     let socketUrl = "";
-    const baseUrlObj = new URL(BASE_URL);
+    const baseUrlObj = new URL(NEXT_BASE_URL);
     const host = baseUrlObj.host; // this includes hostname and port
 
     // construct WebSocket URL with trailing slash
@@ -98,7 +98,7 @@ const ChatScreen = () => {
     try {
       const cleanToken = authToken.authToken?.trim();
       await api.post(
-        `${BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
+        `${NEXT_BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
         {},
         {
           headers: {
@@ -116,7 +116,7 @@ const ChatScreen = () => {
     try {
       const cleanToken = authToken.authToken?.trim();
       const response = await api.get(
-        `${BASE_URL}/api/chat/history/${roomId}/`,
+        `${NEXT_BASE_URL}/api/chat/history/${roomId}/`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,

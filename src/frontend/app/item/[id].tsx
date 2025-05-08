@@ -32,7 +32,7 @@ import api from "@/types/api";
 const { width, height } = Dimensions.get("window");
 
 const ItemDetails = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const router = useRouter();
   const { id, item: itemString, source, refreshKey } = useLocalSearchParams();
   const [item, setItem] = useState(
@@ -87,7 +87,7 @@ const ItemDetails = () => {
     try {
       setIsLoading(true);
       const cleanToken = authToken?.trim();
-      const response = await api.get(`${BASE_URL}/api/items/${id}/`, {
+      const response = await api.get(`${NEXT_BASE_URL}/api/items/${id}/`, {
         headers: {
           Authorization: `Bearer ${cleanToken}`,
           "Content-Type": "application/json",
@@ -150,7 +150,7 @@ const ItemDetails = () => {
       setIsLoading(true);
       const cleanToken = authToken?.trim();
       const response = await api.delete(
-        `${BASE_URL}/api/items/${id}/delete_item/`,
+        `${NEXT_BASE_URL}/api/items/${id}/delete_item/`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,
@@ -180,7 +180,7 @@ const ItemDetails = () => {
       try {
         const cleanToken = authToken?.trim();
         const response = await api.post(
-          `${BASE_URL}/api/items/${item.id}/request_purchase/`,
+          `${NEXT_BASE_URL}/api/items/${item.id}/request_purchase/`,
           {},
           {
             headers: {
@@ -251,7 +251,7 @@ const ItemDetails = () => {
     try {
       const cleanToken = authToken?.trim();
       const response = await api.get(
-        `${BASE_URL}/api/chat/get-or-create-room/`,
+        `${NEXT_BASE_URL}/api/chat/get-or-create-room/`,
         {
           params: { user_id: item.seller, item_id: item.id }, // Assuming item.seller contains the seller's user id
           headers: {

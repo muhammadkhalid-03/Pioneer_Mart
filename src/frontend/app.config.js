@@ -1,4 +1,4 @@
-if (!process.env.BASE_URL) {
+if (!process.env.NEXT_NEXT_BASE_URL) {
   require('dotenv').config({ path: '.env.development' })
 }
 module.exports = {
@@ -64,7 +64,7 @@ module.exports = {
       router: {
         origin: false
       },
-      apiUrl: `http://127.0.0.1:8000`,
+      apiUrl: NEXT_NEXT_BASE_URL,
       SE_API_USER: process.env.SE_API_USER,
       SE_SECRET_KEY: process.env.SE_SECRET_KEY,
       SE_WORKFLOW: process.env.SE_WORKFLOW,

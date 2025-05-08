@@ -42,7 +42,7 @@ interface Props {
 }
 
 const ChatRoomsScreen: React.FC<Props> = ({}) => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const { userData } = useUserStore();
@@ -59,7 +59,7 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
   const fetchRooms = async (): Promise<void> => {
     try {
       const cleanToken = authToken?.trim();
-      const response = await api.get(`${BASE_URL}/api/chat/rooms/`, {
+      const response = await api.get(`${NEXT_BASE_URL}/api/chat/rooms/`, {
         headers: {
           Authorization: `Bearer ${cleanToken}`,
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
     try {
       const cleanToken = authToken?.trim();
       await api.post(
-        `${BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
+        `${NEXT_BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
         {},
         {
           headers: {
@@ -148,7 +148,7 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
   const handleDeleteRoom = async (roomId: number) => {
     try {
       const cleanToken = authToken?.trim();
-      await api.delete(`${BASE_URL}/api/chat/rooms/${roomId}/delete/`, {
+      await api.delete(`${NEXT_BASE_URL}/api/chat/rooms/${roomId}/delete/`, {
         headers: {
           Authorization: `Bearer ${cleanToken}`,
           "Content-Type": "application/json",

@@ -50,7 +50,7 @@ jest.mock("@/components/SingleItem", () => "SingleItem");
 jest.mock("@/components/ZoomModal", () => "ZoomModal");
 
 describe("ItemDetails Component", () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const mockItem: ItemType = {
     id: 1,
     title: "Test Item",
@@ -174,7 +174,7 @@ describe("ItemDetails Component", () => {
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
-        `${BASE_URL}/api/items/${mockItem.id}/request_purchase/`,
+        `${NEXT_BASE_URL}/api/items/${mockItem.id}/request_purchase/`,
         {},
         {
           headers: {

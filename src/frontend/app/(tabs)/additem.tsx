@@ -89,7 +89,7 @@ const getImageFileForFormData = async (
 };
 
 const AddItemScreen = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   // initial form state w/ everything empty...we'll use this when submitting the form to reset for user
   const initialFormState = {
     name: "",
@@ -144,7 +144,7 @@ const AddItemScreen = () => {
     try {
       const cleanToken = authToken.trim();
       const response = await api.get<PaginatedResponse<UserInfo>>(
-        `${BASE_URL}/api/users/`,
+        `${NEXT_BASE_URL}/api/users/`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,
@@ -377,13 +377,17 @@ const AddItemScreen = () => {
       formDataObj.forEach((value, key) => {
         console.log(key, value);
       });
-      const response = await api.post(`${BASE_URL}/api/items/`, formDataObj, {
-        headers: {
-          // "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${cleanToken}`,
-          Accept: "application/json",
-        },
-      });
+      const response = await api.post(
+        `${NEXT_BASE_URL}/api/items/`,
+        formDataObj,
+        {
+          headers: {
+            // "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${cleanToken}`,
+            Accept: "application/json",
+          },
+        }
+      );
 
       resetForm();
       Toast.show({

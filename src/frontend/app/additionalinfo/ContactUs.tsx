@@ -19,7 +19,7 @@ import Constants from "expo-constants";
 import api from "@/types/api";
 
 const ContactUs = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const { authToken } = useAuth();
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,7 @@ const ContactUs = () => {
       const cleanToken = authToken?.trim();
       const user_email = userData?.email;
       const response = await api.post(
-        `${BASE_URL}/otpauth/contact`,
+        `${NEXT_BASE_URL}/otpauth/contact`,
         { description, user_email },
         {
           headers: {
