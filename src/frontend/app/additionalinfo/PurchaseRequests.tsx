@@ -53,7 +53,7 @@ import { useTheme } from "../contexts/ThemeContext";
 
 const PurchaseRequests = () => {
   const { colors } = useTheme();
-  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   // States for PurchaseRequest screen
   const [activeTab, setActiveTab] = useState("sent");
   const [tabPosition] = useState(new Animated.Value(0));
@@ -91,7 +91,7 @@ const PurchaseRequests = () => {
     try {
       setIsLoading(true); // start loading
       const sentResponse = await api.get(
-        `${NEXT_BASE_URL}/api/requests/sent/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/requests/sent/`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -101,7 +101,7 @@ const PurchaseRequests = () => {
         }
       );
       const receivedResponse = await api.get(
-        `${NEXT_BASE_URL}/api/requests/received/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/requests/received/`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -144,7 +144,7 @@ const PurchaseRequests = () => {
     try {
       const cleanToken = authToken?.trim();
       await api.post(
-        `${NEXT_BASE_URL}/api/requests/${requestId}/accept/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/requests/${requestId}/accept/`,
         {},
         {
           headers: {
@@ -176,7 +176,7 @@ const PurchaseRequests = () => {
     try {
       const cleanToken = authToken?.trim();
       await api.post(
-        `${NEXT_BASE_URL}/api/requests/${requestId}/decline/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/requests/${requestId}/decline/`,
         {},
         {
           headers: {
@@ -215,11 +215,14 @@ const PurchaseRequests = () => {
     const confirmDelete = async () => {
       try {
         const cleanToken = authToken?.trim();
-        await api.delete(`${NEXT_BASE_URL}/api/requests/${requestId}/remove/`, {
-          headers: {
-            Authorization: `Bearer ${cleanToken}`,
-          },
-        });
+        await api.delete(
+          `${NEXT_PUBLIC_BASE_URL}/api/requests/${requestId}/remove/`,
+          {
+            headers: {
+              Authorization: `Bearer ${cleanToken}`,
+            },
+          }
+        );
 
         if (activeTab === "sent") {
           setSentRequests((prevRequests) =>

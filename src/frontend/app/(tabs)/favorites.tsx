@@ -16,7 +16,7 @@ import api from "@/types/api";
 
 const FavoritesScreen = () => {
   const { colors } = useTheme();
-  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const { screens, setActiveScreen, loadItems, loadCategories, categories } =
     useItemsStore();
   const { authToken } = useAuth();
@@ -53,7 +53,7 @@ const FavoritesScreen = () => {
       for (const item of notRequestedItems) {
         try {
           await api.post(
-            `${NEXT_BASE_URL}/api/items/${item.id}/request_purchase/`,
+            `${NEXT_PUBLIC_BASE_URL}/api/items/${item.id}/request_purchase/`,
             {},
             {
               headers: {

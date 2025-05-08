@@ -84,7 +84,7 @@ const getImageFileForFormData = async (
 
 const EditItem = () => {
   const { colors } = useTheme();
-  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const { item: itemString } = useLocalSearchParams();
   const originalItem = JSON.parse(itemString as string);
   const { authToken } = useAuth();
@@ -355,7 +355,7 @@ const EditItem = () => {
       };
 
       const response = await api.put(
-        `${NEXT_BASE_URL}/api/items/${originalItem.id}/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/items/${originalItem.id}/`,
         formData,
         config
       );

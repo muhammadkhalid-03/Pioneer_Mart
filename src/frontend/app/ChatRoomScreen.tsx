@@ -42,7 +42,7 @@ interface Props {
 }
 
 const ChatRoomsScreen: React.FC<Props> = ({}) => {
-  const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const { userData } = useUserStore();
@@ -59,13 +59,16 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
   const fetchRooms = async (): Promise<void> => {
     try {
       const cleanToken = authToken?.trim();
-      const response = await api.get(`${NEXT_BASE_URL}/api/chat/rooms/`, {
-        headers: {
-          Authorization: `Bearer ${cleanToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
+      const response = await api.get(
+        `${NEXT_PUBLIC_BASE_URL}/api/chat/rooms/`,
+        {
+          headers: {
+            Authorization: `Bearer ${cleanToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
       const data = response.data;
 
       // Sort the rooms by last message time (i.e. newest first)
@@ -95,7 +98,7 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
     try {
       const cleanToken = authToken?.trim();
       await api.post(
-        `${NEXT_BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
         {},
         {
           headers: {
@@ -148,12 +151,15 @@ const ChatRoomsScreen: React.FC<Props> = ({}) => {
   const handleDeleteRoom = async (roomId: number) => {
     try {
       const cleanToken = authToken?.trim();
-      await api.delete(`${NEXT_BASE_URL}/api/chat/rooms/${roomId}/delete/`, {
-        headers: {
-          Authorization: `Bearer ${cleanToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      await api.delete(
+        `${NEXT_PUBLIC_BASE_URL}/api/chat/rooms/${roomId}/delete/`,
+        {
+          headers: {
+            Authorization: `Bearer ${cleanToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       // update UI after deletion
       setRooms((prevRooms) =>

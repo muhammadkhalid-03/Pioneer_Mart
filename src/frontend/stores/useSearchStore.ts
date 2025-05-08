@@ -91,7 +91,7 @@ const initialScreenState: ScreenState = {
   hasMore: false,
 };
 
-const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
 export const useItemsStore = create<ItemsStoreState>((set, get) => ({
   //initial states
   screens: {
@@ -244,7 +244,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
 
       const cleanToken = authToken?.trim(); //trim to ensure token is correct
       const response = await api.get<PaginatedResponse<ItemType>>(
-        `${NEXT_BASE_URL}/${endpoint}`,
+        `${NEXT_PUBLIC_BASE_URL}/${endpoint}`,
         {
           //api call
           headers: {
@@ -343,7 +343,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
 
       const cleanToken = authToken?.trim();
       const response = await api.get<PaginatedResponse<ItemType>>(
-        `${NEXT_BASE_URL}/${endpoint}`,
+        `${NEXT_PUBLIC_BASE_URL}/${endpoint}`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,
@@ -479,7 +479,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
     try {
       const cleanToken = authToken?.trim();
       const response = await api.get<CategoryType[]>(
-        `${NEXT_BASE_URL}/api/categories/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/categories/`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,
@@ -540,7 +540,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
         endpoint = `api/items/search_reported_items/?${query}`; // TODO
       }
       const response = await api.get<PaginatedResponse<ItemType>>(
-        `${NEXT_BASE_URL}/${endpoint}`,
+        `${NEXT_PUBLIC_BASE_URL}/${endpoint}`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,
@@ -676,7 +676,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
   toggleFavorite: async (itemId: number, authToken: string) => {
     try {
       const cleanToken = authToken?.trim();
-      const URL = `${NEXT_BASE_URL}/api/items/${itemId}/toggle_favorite/`;
+      const URL = `${NEXT_PUBLIC_BASE_URL}/api/items/${itemId}/toggle_favorite/`;
 
       // First determine the current favorite status from the item in any screen
       let currentFavoriteStatus = false;
@@ -824,7 +824,7 @@ export const useItemsStore = create<ItemsStoreState>((set, get) => ({
   ) => {
     try {
       const cleanToken = authToken?.trim();
-      const URL = `${NEXT_BASE_URL}/api/report/${itemId}/toggle_report/`;
+      const URL = `${NEXT_PUBLIC_BASE_URL}/api/report/${itemId}/toggle_report/`;
 
       // First determine the current reported status from the item in any screen
       let currentReportedStatus = false;

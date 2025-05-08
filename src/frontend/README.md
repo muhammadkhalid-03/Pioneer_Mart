@@ -23,5 +23,5 @@
 
 - `app/`: Contains all the TSX files for the application's components
 - `__tests__/`: Contains all the unit and integration tests for the application, written using Jest and React Testing Library.
-- `config.ts`: `NEXT_BASE_URL` for API calls
+- `config.ts`: `NEXT_PUBLIC_BASE_URL` for API calls
 - `setupTests.tsx`: Configuration for `react-native-async-storage`

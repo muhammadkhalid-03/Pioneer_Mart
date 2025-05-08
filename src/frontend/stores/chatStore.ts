@@ -3,7 +3,7 @@ import axios from "axios";
 import Constants from "expo-constants";
 import api from "@/types/api";
 
-const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
 
 interface ChatState {
   unreadCount: number;
@@ -22,7 +22,7 @@ export const useChatStore = create<ChatState>((set) => ({
       set({ isLoading: true });
       const cleanToken = token.trim();
       const response = await api.get(
-        `${NEXT_BASE_URL}/api/chat/unread-count/`,
+        `${NEXT_PUBLIC_BASE_URL}/api/chat/unread-count/`,
         {
           headers: {
             Authorization: `Bearer ${cleanToken}`,

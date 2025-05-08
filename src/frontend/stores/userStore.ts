@@ -4,7 +4,7 @@ import axios from "axios";
 import api, { PaginatedResponse } from "@/types/api";
 import Constants from "expo-constants";
 
-const NEXT_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
 
 interface UserState {
   userData: UserInfo | null;
@@ -24,7 +24,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const cleanToken = token?.trim();
-      const URL = `${NEXT_BASE_URL}/api/users/`;
+      const URL = `${NEXT_PUBLIC_BASE_URL}/api/users/`;
       const response = await api.get<PaginatedResponse<UserInfo>>(URL, {
         headers: {
           Authorization: `Bearer ${cleanToken}`,
@@ -59,7 +59,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         throw new Error("No user data available to update");
       }
       const cleanToken = token?.trim();
-      const URL = `${NEXT_BASE_URL}/api/users/${userData.id}/`;
+      const URL = `${NEXT_PUBLIC_BASE_URL}/api/users/${userData.id}/`;
       const response = await api.patch(URL, updatedData, {
         headers: {
           Authorization: `Bearer ${cleanToken}`,
