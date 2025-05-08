@@ -26,7 +26,7 @@ type Props = {
   source?: string;
 };
 
-const width = Dimensions.get("window").width / 2 - 10;
+const width = Dimensions.get("window").width / 2 - 20;
 
 const isProbablyLaptop = () => {
   if (typeof window !== "undefined") {
@@ -172,7 +172,7 @@ export default React.memo(SingleItem);
 
 const styles = StyleSheet.create({
   container: {
-    width: isProbablyLaptop() ? 200 : width,
+    width: isProbablyLaptop() ? 150 : width,
     // width: 150,
     marginHorizontal: 5,
     position: "relative",
