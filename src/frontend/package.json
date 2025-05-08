@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "build": "expo export:web --output-dir dist"
+    "build": "expo export --platform web"
   },
   "jest": {
     "preset": "jest-expo",
@@ -44,6 +44,7 @@
     "expo-haptics": "~14.0.1",
     "expo-image-picker": "~16.0.6",
     "expo-linking": "~7.0.5",
+    "expo-router": "~4.0.21",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.2",
@@ -61,8 +62,7 @@
     "react-native-toast-message": "^2.3.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "zustand": "^5.0.3",
-    "expo-router": "~4.0.21"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
