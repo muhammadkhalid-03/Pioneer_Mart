@@ -28,6 +28,16 @@ type Props = {
 
 const width = Dimensions.get("window").width / 2 - 10;
 
+const isProbablyLaptop = () => {
+  if (typeof window !== "undefined") {
+    const width = window.innerWidth;
+    return (
+      width > 768 && !/Mobile|Android|iPhone|iPad/.test(navigator.userAgent)
+    );
+  }
+  return false;
+};
+
 const SingleItem = ({ item, source }: Props) => {
   const route = useRoute();
   const { toggleFavorite, toggleReport } = useItemsStore();
@@ -162,7 +172,7 @@ export default React.memo(SingleItem);
 
 const styles = StyleSheet.create({
   container: {
-    width: width,
+    width: isProbablyLaptop() ? 200 : width,
     // width: 150,
     marginHorizontal: 5,
     position: "relative",
