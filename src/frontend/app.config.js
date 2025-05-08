@@ -1,4 +1,4 @@
-if (!process.env.NEXT_NEXT_BASE_URL) {
+if (!process.env.NEXT_BASE_URL) {
   require('dotenv').config({ path: '.env.development' })
 }
 module.exports = {
