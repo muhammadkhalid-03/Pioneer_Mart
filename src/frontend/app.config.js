@@ -64,7 +64,7 @@ module.exports = {
       router: {
         origin: false
       },
-      apiUrl: NEXT_NEXT_BASE_URL,
+      apiUrl: NEXT_BASE_URL,
       SE_API_USER: process.env.SE_API_USER,
       SE_SECRET_KEY: process.env.SE_SECRET_KEY,
       SE_WORKFLOW: process.env.SE_WORKFLOW,
