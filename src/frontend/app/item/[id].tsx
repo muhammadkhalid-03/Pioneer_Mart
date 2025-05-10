@@ -31,6 +31,16 @@ import api from "@/types/api";
 
 const { width, height } = Dimensions.get("window");
 
+const isProbablyLaptop = () => {
+  if (typeof window !== "undefined") {
+    const width = window.innerWidth;
+    return (
+      width > 768 && !/Mobile|Android|iPhone|iPad/.test(navigator.userAgent)
+    );
+  }
+  return false;
+};
+
 const ItemDetails = () => {
   const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   const router = useRouter();
@@ -575,19 +585,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   carouselContainer: {
-    width: 500,
-    height: height * 0.4,
+    width: isProbablyLaptop() ? 400 : width,
+    height: height * 0.3,
     position: "relative",
     backgroundColor: "#f0f0f0",
   },
   itemImage: {
-    width: 500,
-    height: height * 0.4,
+    width: isProbablyLaptop() ? 400 : width,
+    height: height * 0.3,
   },
   paginationContainer: {
     position: "absolute",
     bottom: 20,
-    width: 600,
+    width: isProbablyLaptop() ? 400 : width,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
