@@ -3,7 +3,6 @@
       { "source": "/chat/:path*", "destination": "/" },
       { "source": "/item/:path*", "destination": "/" },
       { "source": "/(tabs)/:path*", "destination": "/" },
-      { "source": "/additionalinfo/:path*", "destination": "/" },
       {
         "source": "/api/:path*",
         "destination": "https://env-2325023.us.reclaim.cloud/api/:path*"
