@@ -20,6 +20,7 @@ import React from "react";
 import ReportModal from "./ReportModal";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLatestItem } from "@/hooks/useLatestItem";
+import { useTheme } from "@/app/contexts/ThemeContext";
 
 type Props = {
   item: ItemType;
@@ -40,6 +41,8 @@ const isProbablyLaptop = () => {
 
 const SingleItem = ({ item, source }: Props) => {
   const route = useRoute();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { toggleFavorite, toggleReport } = useItemsStore();
   const { authToken } = useAuth();
   const { showFavoritesIcon, setShowFavoritesIcon } = useSingleItemStore();
@@ -127,7 +130,7 @@ const SingleItem = ({ item, source }: Props) => {
                   }
                   name={latestItem.is_reported ? "flag" : "outlined-flag"}
                   size={24}
-                  color="black"
+                  color={colors.textPrimary}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -140,7 +143,7 @@ const SingleItem = ({ item, source }: Props) => {
                   }
                   name={latestItem.is_favorited ? "heart" : "hearto"}
                   size={22}
-                  color="black"
+                  color={colors.textPrimary}
                 />
               </TouchableOpacity>
             </>
@@ -170,107 +173,108 @@ const SingleItem = ({ item, source }: Props) => {
 
 export default React.memo(SingleItem);
 
-const styles = StyleSheet.create({
-  container: {
-    width: isProbablyLaptop() ? 150 : width,
-    // width: 150,
-    marginHorizontal: 5,
-    position: "relative",
-  },
-  itemImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 15,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  myItemImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 15,
-    marginTop: 10,
-    marginBottom: 10,
-    borderColor: "#B91C1C",
-    borderWidth: 3,
-    backgroundColor: "#FFF5F5",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  buttonsContainer: {
-    position: "absolute",
-    right: 10,
-    top: 20,
-    flexDirection: "row",
-    gap: 10,
-  },
-  iconBtn: {
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    padding: 5,
-    borderRadius: 30,
-  },
-  favBtn: {
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-    padding: 5,
-    borderRadius: 30,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "black",
-  },
-  requestersCount: {
-    fontSize: 12,
-    color: "black",
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "black",
-  },
-  soldTagContainer: {
-    position: "absolute",
-    right: 10,
-    top: "10%",
-    paddingVertical: 8,
-    transform: [{ translateY: -15 }],
-  },
-  soldTagText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 16,
-  },
-  detailsContainer: {
-    paddingHorizontal: 5,
-    paddingBottom: 8,
-  },
-  ownerLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#ffd700",
-    marginTop: 2,
-  },
-  ownershipTag: {
-    position: "absolute",
-    top: 12,
-    left: 12,
-    backgroundColor: "#B91C1C",
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-    zIndex: 10,
-  },
-  ownershipTagText: {
-    fontSize: 10,
-    color: "white",
-    fontWeight: "600",
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      width: isProbablyLaptop() ? 150 : width,
+      // width: 150,
+      marginHorizontal: 5,
+      position: "relative",
+    },
+    itemImage: {
+      width: "100%",
+      height: 200,
+      borderRadius: 15,
+      marginTop: 10,
+      marginBottom: 10,
+    },
+    myItemImage: {
+      width: "100%",
+      height: 200,
+      borderRadius: 15,
+      marginTop: 10,
+      marginBottom: 10,
+      borderColor: colors.accent,
+      borderWidth: 3,
+      backgroundColor: colors.background,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.07,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    buttonsContainer: {
+      position: "absolute",
+      right: 10,
+      top: 20,
+      flexDirection: "row",
+      gap: 10,
+    },
+    iconBtn: {
+      backgroundColor: "rgba(255, 255, 255, 0.6)",
+      padding: 5,
+      borderRadius: 30,
+    },
+    favBtn: {
+      backgroundColor: "rgba(255, 255, 255, 0.6)",
+      padding: 5,
+      borderRadius: 30,
+    },
+    infoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    price: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colors.textPrimary,
+    },
+    requestersCount: {
+      fontSize: 12,
+      color: colors.textPrimary,
+    },
+    title: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textPrimary,
+    },
+    soldTagContainer: {
+      position: "absolute",
+      right: 10,
+      top: "10%",
+      paddingVertical: 8,
+      transform: [{ translateY: -15 }],
+    },
+    soldTagText: {
+      color: colors.card,
+      fontWeight: "bold",
+      textAlign: "center",
+      fontSize: 16,
+    },
+    detailsContainer: {
+      paddingHorizontal: 5,
+      paddingBottom: 8,
+    },
+    ownerLabel: {
+      fontSize: 12,
+      fontWeight: "500",
+      color: colors.accentSecondary,
+      marginTop: 2,
+    },
+    ownershipTag: {
+      position: "absolute",
+      top: 12,
+      left: 12,
+      backgroundColor: colors.accent,
+      paddingVertical: 2,
+      paddingHorizontal: 6,
+      borderRadius: 4,
+      zIndex: 10,
+    },
+    ownershipTagText: {
+      fontSize: 10,
+      color: colors.card,
+      fontWeight: "600",
+    },
+  });

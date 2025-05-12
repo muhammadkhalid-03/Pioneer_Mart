@@ -6,10 +6,12 @@ import { AppInitialier } from "@/components/AppInitializer";
 import { AnimatedTabBarButton } from "@/components/AnimatedTabBarButton";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotification } from "../contexts/NotificationContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 // This defines the basic layout of the app after user's logged in
 export default function TabLayout() {
   const { authToken } = useAuth();
+  const { colors } = useTheme();
   const { unreadCount, refreshUnreadCount } = useNotification();
 
   useEffect(() => {
@@ -33,14 +35,14 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: "#FFF9F0",
-            borderTopColor: "#FFE0B2",
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
             height: 60,
             paddingBottom: 8,
             paddingTop: 6,
           },
-          tabBarActiveTintColor: "#C98474",
-          tabBarInactiveTintColor: "#888888",
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.textSecondary,
           tabBarLabelStyle: {
             fontSize: 12,
           },
@@ -55,7 +57,7 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "home" : "home-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
@@ -70,7 +72,7 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "notifications" : "notifications-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
@@ -80,7 +82,9 @@ export default function TabLayout() {
           name="additem"
           options={{
             title: "Add Item",
-            tabBarIcon: () => <Ionicons name="add" size={24} color="black" />,
+            tabBarIcon: () => (
+              <Ionicons name="add" size={24} color={colors.textPrimary} />
+            ),
           }}
         />
         <Tabs.Screen
@@ -91,7 +95,7 @@ export default function TabLayout() {
               <MaterialIcons
                 name={focused ? "favorite" : "favorite-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
@@ -104,7 +108,7 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "settings" : "settings-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}

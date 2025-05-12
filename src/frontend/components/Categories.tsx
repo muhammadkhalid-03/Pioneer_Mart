@@ -16,6 +16,7 @@ import { CategoryType, ScreenId } from "@/types/types";
 import { useItemsStore } from "@/stores/useSearchStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/app/contexts/ThemeContext";
 
 /**
  * Props for the Categories component.
@@ -63,6 +64,8 @@ const Categories: React.FC<CategoriesProps> = ({
   categories,
 }: CategoriesProps) => {
   const { screens, filterByCategory } = useItemsStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   // const { selectedCategory } = screens[screenId];
   const screenState = screens[screenId];
   const selectedCategory = screenState.selectedCategory;
@@ -123,7 +126,7 @@ const Categories: React.FC<CategoriesProps> = ({
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
         >
-          <MaterialIcons name="filter-list" size={16} color="#4285F4" />
+          <MaterialIcons name="filter-list" size={16} color={colors.accent} />
           <Text style={styles.filterText}>Filter & Sort</Text>
         </TouchableOpacity>
       </View>
@@ -179,7 +182,11 @@ const Categories: React.FC<CategoriesProps> = ({
           onPress={() => setCategoriesModalVisible(true)}
         >
           <Text style={styles.viewAllCategoriesText}>View All</Text>
-          <MaterialIcons name="keyboard-arrow-right" size={14} color="#555" />
+          <MaterialIcons
+            name="keyboard-arrow-right"
+            size={14}
+            color={colors.textSecondary}
+          />
         </TouchableOpacity>
       </ScrollView>
 
@@ -197,7 +204,11 @@ const Categories: React.FC<CategoriesProps> = ({
               <TouchableOpacity
                 onPress={() => setCategoriesModalVisible(false)}
               >
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.textPrimary}
+                />
               </TouchableOpacity>
             </View>
             <FlatList
@@ -221,7 +232,11 @@ const Categories: React.FC<CategoriesProps> = ({
                     All Items
                   </Text>
                   {selectedCategory === null && (
-                    <MaterialIcons name="check" size={20} color="#4285F4" />
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colors.accent}
+                    />
                   )}
                 </TouchableOpacity>
               }
@@ -244,7 +259,11 @@ const Categories: React.FC<CategoriesProps> = ({
                     {item.name}
                   </Text>
                   {selectedCategory === item.id && (
-                    <MaterialIcons name="check" size={20} color="#4285F4" />
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colors.accent}
+                    />
                   )}
                 </TouchableOpacity>
               )}
@@ -265,7 +284,11 @@ const Categories: React.FC<CategoriesProps> = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filter & Sort</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.textPrimary}
+                />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.filterScrollView}>
@@ -309,21 +332,21 @@ const Categories: React.FC<CategoriesProps> = ({
                       minMarkerOverlapDistance={10}
                       snapped
                       selectedStyle={{
-                        backgroundColor: "#A25E5E",
+                        backgroundColor: colors.accent,
                       }}
                       unselectedStyle={{
-                        backgroundColor: "#EADFD2",
+                        backgroundColor: colors.border,
                       }}
                       containerStyle={{
                         height: 40,
                       }}
                       markerStyle={{
-                        backgroundColor: "#A25E5E",
+                        backgroundColor: colors.accent,
                         height: 24,
                         width: 24,
                         borderRadius: 12,
                         borderWidth: 2,
-                        borderColor: "#FFFFFF",
+                        borderColor: colors.card,
                         shadowColor: "#000",
                         shadowOffset: { width: 0, height: 1 },
                         shadowOpacity: 0.2,
@@ -331,7 +354,7 @@ const Categories: React.FC<CategoriesProps> = ({
                         elevation: 2,
                       }}
                       pressedMarkerStyle={{
-                        backgroundColor: "#8E4F4F",
+                        backgroundColor: colors.accentSecondary,
                         height: 30,
                         width: 30,
                         borderRadius: 15,
@@ -509,8 +532,11 @@ const Categories: React.FC<CategoriesProps> = ({
                     Has Active Purchase Requests
                   </Text>
                   <Switch
-                    trackColor={{ false: "#ECECEC", true: "#A25E5E" }}
-                    thumbColor="#FFFFFF"
+                    trackColor={{
+                      false: "#ECECEC",
+                      true: colors.accentSecondary,
+                    }}
+                    thumbColor={colors.card}
                     ios_backgroundColor="#ECECEC"
                     onValueChange={(value) =>
                       setLocalFilterOptions({
@@ -551,248 +577,249 @@ export default Categories;
 /**
  * Styles for the Categories component layout and buttons.
  */
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 15,
-    // position: "relative",
-  },
-  titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5E3DC",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  filterText: {
-    color: "#A25E5E",
-    fontSize: 12,
-    fontWeight: "500",
-    marginLeft: 4,
-  },
-  viewAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  viewAllText: {
-    color: "#4285F4",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  scrollViewContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 5,
-  },
-  categoryItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 5,
-    borderRadius: 20,
-    backgroundColor: "#F5E3DC",
-    borderWidth: 1,
-    borderColor: "#EADFD2",
-  },
-  selectedCategory: {
-    backgroundColor: "#A25E5E",
-    borderColor: "#A25E5E",
-  },
-  categoryText: {
-    fontSize: 14,
-    color: "#4A4A4A",
-  },
-  selectedCategoryText: {
-    color: "white",
-    fontWeight: "600",
-  },
-  viewAllCategoriesButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginHorizontal: 5,
-  },
-  viewAllCategoriesText: {
-    fontSize: 14,
-    color: "#555",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFF9F0",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 30,
-    maxHeight: "80%",
-    width: isProbablyLaptop() ? 400 : width,
-    alignSelf: "center",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4A4A4A",
-  },
-  modalCategoryItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  modalSelectedCategory: {
-    backgroundColor: "#f7f9fe",
-  },
-  modalCategoryText: {
-    fontSize: 16,
-    color: "#4A4A4A",
-  },
-  modalSelectedCategoryText: {
-    color: "#A25E5E",
-    fontWeight: "500",
-  },
-  filterScrollView: {
-    // maxHeight: "60%",
-    // flex: 1,
-  },
-  filterSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  filterSectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  priceRangeContainer: {
-    marginBottom: 10,
-  },
-  priceLabel: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  sliderContainer: {
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  priceRangeLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 5,
-  },
-  priceRangeLabel: {
-    fontSize: 12,
-    color: "#888",
-  },
-  customPriceInputs: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  priceInput: {
-    width: 70,
-    padding: 8,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    fontSize: 14,
-    textAlign: "center",
-  },
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      paddingVertical: 15,
+      // position: "relative",
+    },
+    titleContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 15,
+      marginBottom: 10,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "bold",
+    },
+    filterButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.accentSecondary + "22",
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+    },
+    filterText: {
+      color: colors.accent,
+      fontSize: 12,
+      fontWeight: "500",
+      marginLeft: 4,
+    },
+    viewAllButton: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    viewAllText: {
+      color: "#4285F4",
+      fontSize: 12,
+      fontWeight: "500",
+    },
+    scrollViewContent: {
+      paddingHorizontal: 10,
+      paddingBottom: 5,
+    },
+    categoryItem: {
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      marginHorizontal: 5,
+      borderRadius: 20,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    selectedCategory: {
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+    },
+    categoryText: {
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    selectedCategoryText: {
+      color: "#fff",
+      fontWeight: "600",
+    },
+    viewAllCategoriesButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      marginHorizontal: 5,
+    },
+    viewAllCategoriesText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingBottom: 30,
+      maxHeight: "80%",
+      width: isProbablyLaptop() ? 400 : width,
+      alignSelf: "center",
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: colors.textPrimary,
+    },
+    modalCategoryItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    modalSelectedCategory: {
+      backgroundColor: colors.accentSecondary + "11",
+    },
+    modalCategoryText: {
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    modalSelectedCategoryText: {
+      color: colors.accent,
+      fontWeight: "500",
+    },
+    filterScrollView: {
+      // maxHeight: "60%",
+      // flex: 1,
+    },
+    filterSection: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: "#f0f0f0",
+    },
+    filterSectionTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 12,
+    },
+    priceRangeContainer: {
+      marginBottom: 10,
+    },
+    priceLabel: {
+      fontSize: 14,
+      color: "#333",
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    sliderContainer: {
+      alignItems: "center",
+      marginVertical: 10,
+    },
+    priceRangeLabels: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingHorizontal: 10,
+      marginTop: 5,
+    },
+    priceRangeLabel: {
+      fontSize: 12,
+      color: "#888",
+    },
+    customPriceInputs: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    priceInput: {
+      width: 70,
+      padding: 8,
+      backgroundColor: "#fff",
+      borderWidth: 1,
+      borderColor: "#ddd",
+      borderRadius: 6,
+      fontSize: 14,
+      textAlign: "center",
+    },
 
-  sortOptionsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 8,
-  },
-  sortOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 8,
-    marginBottom: 8,
-    borderRadius: 16,
-    backgroundColor: "#F5E3DC",
-    borderWidth: 1,
-    borderColor: "#EADFD2",
-  },
-  selectedSortOption: {
-    backgroundColor: "#A25E5E",
-    borderColor: "#A25E5E",
-  },
-  sortOptionText: {
-    fontSize: 14,
-    color: "#4A4A4A",
-  },
-  selectedSortOptionText: {
-    color: "white",
-  },
-  switchContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  switchLabel: {
-    fontSize: 14,
-    color: "#333",
-  },
-  filterActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-  },
-  resetButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  resetButtonText: {
-    fontSize: 14,
-    color: "#333",
-    fontWeight: "500",
-  },
-  applyButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    backgroundColor: "#A25E5E",
-  },
-  applyButtonText: {
-    color: "white",
-    fontWeight: "500",
-    textShadowColor: "rgba(0, 0, 0, 0.2)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-});
+    sortOptionsContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginTop: 8,
+    },
+    sortOption: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      marginRight: 8,
+      marginBottom: 8,
+      borderRadius: 16,
+      backgroundColor: "#F5E3DC",
+      borderWidth: 1,
+      borderColor: "#EADFD2",
+    },
+    selectedSortOption: {
+      backgroundColor: "#A25E5E",
+      borderColor: "#A25E5E",
+    },
+    sortOptionText: {
+      fontSize: 14,
+      color: "#4A4A4A",
+    },
+    selectedSortOptionText: {
+      color: "white",
+    },
+    switchContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    switchLabel: {
+      fontSize: 14,
+      color: colors.textPrimary,
+    },
+    filterActions: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    resetButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    resetButtonText: {
+      fontSize: 14,
+      color: colors.textPrimary,
+      fontWeight: "500",
+    },
+    applyButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 30,
+      borderRadius: 8,
+      backgroundColor: colors.accent,
+    },
+    applyButtonText: {
+      color: "white",
+      fontWeight: "500",
+      textShadowColor: "rgba(0, 0, 0, 0.2)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+  });

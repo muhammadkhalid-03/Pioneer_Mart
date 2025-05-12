@@ -17,6 +17,7 @@ import { useTheme } from "../contexts/ThemeContext";
 
 const MyItems = () => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { authToken } = useAuth(); //auth context
   const { screens, setActiveScreen, loadItems, loadCategories, categories } =
     useItemsStore();
@@ -36,23 +37,17 @@ const MyItems = () => {
     <>
       <Stack.Screen
         options={{
+          headerTitle: "My Items",
+          headerTitleAlign: "center",
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ padding: 8 }}
-              onPress={() => router.back()}
-            >
-              <Entypo name="chevron-left" size={24} color="black" />
-            </TouchableOpacity>
-          ),
-          header: () => <Header screenId={screenId} />,
+          headerBackTitle: "Back",
         }}
       />
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator
             size="large"
-            color="#A25E5E"
+            color={colors.accent}
             testID="loading-indicator"
           />
         </View>
@@ -74,11 +69,12 @@ const MyItems = () => {
 
 export default MyItems;
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFF9F0", // 👈 soft cream background
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+  });

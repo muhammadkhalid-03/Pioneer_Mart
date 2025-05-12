@@ -28,11 +28,12 @@ import ReportModal from "@/components/ReportModal";
 import Constants from "expo-constants";
 import Toast from "react-native-toast-message";
 import api from "@/types/api";
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
 
 const ItemDetails = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const BASE_URL = Constants.expoConfig?.extra?.apiUrl;
   const router = useRouter();
   const { id, item: itemString, source, refreshKey } = useLocalSearchParams();
   const [item, setItem] = useState(
@@ -49,6 +50,8 @@ const ItemDetails = () => {
   const { authToken } = useAuth();
   const { userData } = useUserStore();
   const { toggleReport } = useItemsStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   // image carousel stuff
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -215,11 +218,16 @@ const ItemDetails = () => {
   // render each image in the carousel
   const renderImageItem = ({ item: imageUrl }: { item: string }) => {
     return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={styles.itemImage}
-        resizeMode="cover"
-      />
+      <View style={styles.imageWrapper}>
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.itemImage}
+          resizeMode="cover"
+        />
+        <View style={styles.zoomIconContainer}>
+          <FontAwesome name="search-plus" size={24} color={colors.card} />
+        </View>
+      </View>
     );
   };
 
@@ -337,6 +345,7 @@ const ItemDetails = () => {
             isVisible={isZoomVisible}
             onClose={() => setIsZoomVisible(false)}
             item={item} // Use the updated item
+            initialImageIndex={currentImageIndex}
           />
         )}
         <ScrollView
@@ -560,218 +569,231 @@ const ItemDetails = () => {
 
 export default ItemDetails;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  carouselContainer: {
-    width: 500,
-    height: height * 0.4,
-    position: "relative",
-    backgroundColor: "#f0f0f0",
-  },
-  itemImage: {
-    width: 500,
-    height: height * 0.4,
-  },
-  paginationContainer: {
-    position: "absolute",
-    bottom: 20,
-    width: 600,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
-  },
-  paginationDotActive: {
-    backgroundColor: "#fff",
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  imageCounterContainer: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  imageCounter: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  detailsContainer: {
-    padding: 20,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -20,
-    flex: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  itemTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#333",
-    flex: 1,
-  },
-  price: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#22a45d",
-  },
-  infoRow: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
-  },
-  infoIcon: {
-    marginRight: 6,
-  },
-  infoText: {
-    fontSize: 15,
-    color: "#666",
-  },
-  categoryContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f4f8",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    alignSelf: "flex-start",
-    marginBottom: 24,
-  },
-  categoryText: {
-    fontSize: 14,
-    color: "#3498db",
-    fontWeight: "600",
-    marginLeft: 6,
-  },
-  descriptionContainer: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
-  },
-  descriptionText: {
-    fontSize: 16,
-    color: "#555",
-    lineHeight: 24,
-  },
-  actionsContainer: {
-    gap: 12,
-  },
-  editButton: {
-    backgroundColor: "#3498db",
-    paddingVertical: 14,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  deleteButton: {
-    backgroundColor: "#e74c3c",
-    paddingVertical: 14,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  purchaseRequestButton: {
-    backgroundColor: "#3498db",
-    paddingVertical: 14,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  reportItemButton: {
-    backgroundColor: "#e74c3c",
-    paddingVertical: 14,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disabledButton: {
-    backgroundColor: "#95a5a6",
-  },
-  chatButton: {
-    backgroundColor: "#22a45d",
-    paddingVertical: 14,
-    borderRadius: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.card,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    carouselContainer: {
+      width: 400,
+      height: height * 0.4,
+      position: "relative",
+      backgroundColor: "#fff",
+    },
+    imageWrapper: {
+      position: "relative",
+      width: 400,
+      height: height * 0.4,
+      backgroundColor: "red",
+    },
+    zoomIconContainer: {
+      position: "absolute",
+      top: 12,
+      right: 12,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      padding: 6,
+      borderRadius: 20,
+    },
+    itemImage: {
+      width: 400,
+      height: height * 0.4,
+    },
+    paginationContainer: {
+      position: "absolute",
+      bottom: 20,
+      width: 400,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    paginationDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginHorizontal: 4,
+      backgroundColor: colors.card,
+    },
+    paginationDotActive: {
+      backgroundColor: "#fff",
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+    },
+    imageCounterContainer: {
+      position: "absolute",
+      bottom: 20,
+      right: 20,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+    },
+    imageCounter: {
+      color: "white",
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    detailsContainer: {
+      padding: 20,
+      backgroundColor: "#fff",
+      marginTop: -20,
+      flex: 1,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: -3 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      elevation: 10,
+    },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    itemTitle: {
+      fontSize: 22,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    price: {
+      fontSize: 24,
+      fontWeight: "800",
+      color: colors.success,
+    },
+    infoRow: {
+      flexDirection: "row",
+      marginBottom: 16,
+    },
+    infoItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginRight: 20,
+    },
+    infoIcon: {
+      marginRight: 6,
+    },
+    infoText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+    },
+    categoryContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.accentSecondary + "22",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+      alignSelf: "flex-start",
+      marginBottom: 24,
+    },
+    categoryText: {
+      fontSize: 14,
+      color: colors.accent,
+      fontWeight: "600",
+      marginLeft: 6,
+    },
+    descriptionContainer: {
+      marginBottom: 30,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 8,
+    },
+    descriptionText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      lineHeight: 24,
+    },
+    actionsContainer: {
+      gap: 12,
+    },
+    editButton: {
+      backgroundColor: colors.accent,
+      paddingVertical: 14,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    deleteButton: {
+      backgroundColor: colors.danger,
+      paddingVertical: 14,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    purchaseRequestButton: {
+      backgroundColor: "#3498db",
+      paddingVertical: 14,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    reportItemButton: {
+      backgroundColor: colors.danger,
+      paddingVertical: 14,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    disabledButton: {
+      backgroundColor: "#95a5a6",
+    },
+    chatButton: {
+      backgroundColor: colors.success,
+      paddingVertical: 14,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    buttonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    buttonIcon: {
+      marginRight: 8,
+    },
+  });

@@ -10,17 +10,18 @@ import {
 import { useState } from "react";
 import { faqItem } from "@/types/types";
 import React from "react";
+import { useTheme } from "../contexts/ThemeContext";
 
 const FAQs = () => {
-  const router = useRouter();
-
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   // FAQ data with questions and answers
   const faqData: faqItem[] = [
     {
       id: 1,
       question: "How do I edit my account?",
       answer:
-        "The only part of your account that you can edit is your preferred payment method, pronouns, and preferred name.",
+        "Currently you cannot edit your account. We hope to add a profile photo feature which will come in August.",
     },
     {
       id: 2,
@@ -32,7 +33,7 @@ const FAQs = () => {
       id: 3,
       question: "How do I contact customer support?",
       answer:
-        "You can contact our customer support team by going to the Contact Us page or by sending an email to support@pioneermart.com.",
+        "You can contact our customer support team by going to the Contact Us page or by sending an email to pioneermart6@gmail.com.",
     },
     {
       id: 4,
@@ -44,7 +45,7 @@ const FAQs = () => {
       id: 5,
       question: "Once I send a Purchase Request, how do I get the item?",
       answer:
-        "When you click the 'Purchase Request' button, the seller is immediately notified. The seller will then contact you to finalize the price and meeting location.",
+        "When you click the 'Purchase Request' button, the seller's notifications show that you've requested a purchase (not push notification so they will have to open the app to see it). The seller will then contact you to finalize the price and meeting location. If they don't, you can email them.",
     },
     {
       id: 6,
@@ -76,6 +77,7 @@ const FAQs = () => {
           headerTitleAlign: "center",
           headerShown: true,
           headerBackTitle: "Back",
+          // headerTintColor: colors.accent,
         }}
       />
 
@@ -91,7 +93,7 @@ const FAQs = () => {
               <Entypo
                 name={expandedItems[faq.id] ? "chevron-up" : "chevron-down"}
                 size={20}
-                color="black"
+                color={colors.textPrimary}
               />
             </TouchableOpacity>
 
@@ -110,68 +112,69 @@ const FAQs = () => {
 
 export default FAQs;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginHorizontal: 20,
-    marginVertical: 12,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  backBtn: {
-    padding: 10,
-    zIndex: 1,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "center",
-  },
-  contentContainer: {
-    flex: 1,
-    marginTop: 20,
-  },
-  faqItem: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    marginBottom: 15,
-    overflow: "hidden",
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-  },
-  questionContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-  },
-  questionText: {
-    fontSize: 16,
-    fontWeight: "500",
-    flex: 1,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#e0e0e0",
-    marginHorizontal: 16,
-  },
-  answerContainer: {
-    paddingBottom: 16,
-  },
-  answerText: {
-    fontSize: 15,
-    color: "#555",
-    padding: 16,
-    paddingTop: 12,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      marginHorizontal: 20,
+      marginVertical: 12,
+    },
+    headerContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 30,
+      marginBottom: 20,
+    },
+    backBtn: {
+      padding: 10,
+      zIndex: 1,
+    },
+    headerTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      position: "absolute",
+      left: 0,
+      right: 0,
+      textAlign: "center",
+    },
+    contentContainer: {
+      flex: 1,
+      marginTop: 20,
+    },
+    faqItem: {
+      backgroundColor: colors.card,
+      borderRadius: 10,
+      marginBottom: 15,
+      overflow: "hidden",
+      elevation: 1,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 1.5,
+    },
+    questionContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 16,
+    },
+    questionText: {
+      fontSize: 16,
+      fontWeight: "500",
+      flex: 1,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: 16,
+    },
+    answerContainer: {
+      paddingBottom: 16,
+    },
+    answerText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      padding: 16,
+      paddingTop: 12,
+    },
+  });

@@ -53,6 +53,7 @@ import { useTheme } from "../contexts/ThemeContext";
 
 const PurchaseRequests = () => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
   // States for PurchaseRequest screen
   const [activeTab, setActiveTab] = useState("sent");
@@ -268,13 +269,13 @@ const PurchaseRequests = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "#f39c12"; // Amber
+        return colors.accentSecondary; // Amber
       case "accepted":
-        return "#2ecc71"; // Green
+        return colors.success; // Green
       case "declined":
-        return "#e74c3c"; // Red
+        return colors.danger; // Red
       default:
-        return "#3498db"; // Blue (default)
+        return colors.accentSecondary; // Blue (default)
     }
   };
 
@@ -304,7 +305,7 @@ const PurchaseRequests = () => {
         <View style={styles.requestInfo}>
           {activeTab === "sent" && (
             <View style={{ marginBottom: 8 }}>
-              <Text style={{ fontSize: 14, color: "#555" }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                 Seller:{" "}
                 <Text style={{ fontWeight: "600" }}>{item.seller_name}</Text>
               </Text>
@@ -312,7 +313,7 @@ const PurchaseRequests = () => {
           )}
           {activeTab === "received" && (
             <View style={{ marginBottom: 8 }}>
-              <Text style={{ fontSize: 14, color: "#555" }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
                 Requester:{" "}
                 <Text style={{ fontWeight: "600" }}>{item.requester_name}</Text>
               </Text>
@@ -320,7 +321,11 @@ const PurchaseRequests = () => {
           )}
           <View style={styles.statusContainer}>
             <View style={styles.dateContainer}>
-              <Ionicons name="calendar-outline" size={16} color="#666" />
+              <Ionicons
+                name="calendar-outline"
+                size={16}
+                color={colors.textSecondary}
+              />
               <Text style={styles.requestDate}>{formattedDate}</Text>
             </View>
             <View
@@ -340,14 +345,14 @@ const PurchaseRequests = () => {
                     style={styles.acceptButton}
                     onPress={() => acceptRequest(item.id)}
                   >
-                    <Ionicons name="checkmark" size={16} color="white" />
+                    <Ionicons name="checkmark" size={16} color={colors.card} />
                     <Text style={styles.buttonText}>Accept</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.declineButton}
                     onPress={() => declineRequest(item.id)}
                   >
-                    <Ionicons name="close" size={16} color="white" />
+                    <Ionicons name="close" size={16} color={colors.card} />
                     <Text style={styles.buttonText}>Decline</Text>
                   </TouchableOpacity>
                 </>
@@ -365,7 +370,7 @@ const PurchaseRequests = () => {
               removeRequest(item.id);
             }}
           >
-            <Ionicons name="trash-outline" size={16} color="white" />
+            <Ionicons name="trash-outline" size={16} color={colors.card} />
             <Text style={styles.buttonText}>Delete Request</Text>
           </TouchableOpacity>
         </View>
@@ -389,9 +394,9 @@ const PurchaseRequests = () => {
           headerShown: true,
           headerBackTitle: "Back",
           headerStyle: {
-            backgroundColor: "#B45757",
+            backgroundColor: colors.accent,
           },
-          headerTintColor: "#ffffff",
+          headerTintColor: colors.card,
           headerShadowVisible: false,
         }}
       />
@@ -444,7 +449,7 @@ const PurchaseRequests = () => {
           <View style={styles.loadingContainer}>
             <ActivityIndicator
               size="large"
-              color="#4285F4"
+              color={colors.accentSecondary}
               testID="activity-indicator"
             />
           </View>
@@ -460,14 +465,18 @@ const PurchaseRequests = () => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#4285F4"]}
-                tintColor="#4285F4"
+                colors={[colors.accentSecondary]}
+                tintColor={colors.accentSecondary}
               />
             }
             /* Component to display when the list is empty */
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Ionicons name="document-text-outline" size={64} color="#ccc" />
+                <Ionicons
+                  name="document-text-outline"
+                  size={64}
+                  color={colors.border}
+                />
                 <Text style={styles.emptyTitle}>
                   No {activeTab === "sent" ? "Sent" : "Received"} Requests
                 </Text>
@@ -491,183 +500,184 @@ export default PurchaseRequests;
  * @constant styles
  * @description StyleSheet for the PurchaseRequests component.
  */
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF9F0",
-  },
-  tabsOuterContainer: {
-    backgroundColor: "#B45757",
-    paddingBottom: 15,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  tabsContainer: {
-    flexDirection: "row",
-    marginTop: 5,
-    marginHorizontal: 20,
-    marginBottom: 5,
-    borderRadius: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    position: "relative",
-    height: 44,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  tabIndicator: {
-    position: "absolute",
-    width: "50%",
-    height: "100%",
-    borderRadius: 10,
-    zIndex: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  tabText: {
-    fontWeight: "600",
-    fontSize: 15,
-  },
-  activeTabText: {
-    color: "#4285F4",
-    fontWeight: "700",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-  requestItem: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    marginBottom: 16,
-    padding: 14,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  requestInfo: {
-    marginTop: 12,
-    paddingHorizontal: 4,
-  },
-  statusContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  requestDate: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 5,
-  },
-  statusBadge: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-  },
-  statusText: {
-    fontWeight: "600",
-    color: "white",
-    fontSize: 13,
-  },
-  actionButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    gap: 10,
-    marginBottom: 10,
-  },
-  acceptButton: {
-    backgroundColor: "#2ecc71",
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  declineButton: {
-    backgroundColor: "#e74c3c",
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  removeButton: {
-    backgroundColor: "#ff4757",
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-end",
-    marginTop: 4,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
-    marginLeft: 5,
-  },
-  emptyContainer: {
-    padding: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 50,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 22,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    tabsOuterContainer: {
+      backgroundColor: colors.accent,
+      paddingBottom: 15,
+      borderBottomLeftRadius: 15,
+      borderBottomRightRadius: 15,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.2,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 4,
+        },
+      }),
+    },
+    tabsContainer: {
+      flexDirection: "row",
+      marginTop: 5,
+      marginHorizontal: 20,
+      marginBottom: 5,
+      borderRadius: 10,
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      position: "relative",
+      height: 44,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1,
+    },
+    tabIndicator: {
+      position: "absolute",
+      width: "50%",
+      height: "100%",
+      borderRadius: 10,
+      zIndex: 0,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    tabText: {
+      fontWeight: "600",
+      fontSize: 15,
+    },
+    activeTabText: {
+      color: colors.accentSecondary,
+      fontWeight: "700",
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    listContent: {
+      padding: 16,
+      paddingBottom: 30,
+    },
+    requestItem: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      marginBottom: 16,
+      padding: 14,
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
+    },
+    requestInfo: {
+      marginTop: 12,
+      paddingHorizontal: 4,
+    },
+    statusContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 14,
+    },
+    dateContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    requestDate: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginLeft: 5,
+    },
+    statusBadge: {
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 20,
+    },
+    statusText: {
+      fontWeight: "600",
+      color: colors.card,
+      fontSize: 13,
+    },
+    actionButtonsContainer: {
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      gap: 10,
+      marginBottom: 10,
+    },
+    acceptButton: {
+      backgroundColor: colors.success,
+      paddingVertical: 9,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    declineButton: {
+      backgroundColor: colors.danger,
+      paddingVertical: 9,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    removeButton: {
+      backgroundColor: colors.danger,
+      paddingVertical: 9,
+      paddingHorizontal: 14,
+      borderRadius: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "flex-end",
+      marginTop: 4,
+    },
+    buttonText: {
+      color: colors.card,
+      fontWeight: "600",
+      marginLeft: 5,
+    },
+    emptyContainer: {
+      padding: 30,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 50,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.textPrimary,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 22,
+    },
+  });

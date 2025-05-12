@@ -18,6 +18,7 @@ import { useTheme } from "../contexts/ThemeContext";
 
 const ReportedItemsScreen = () => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { authToken } = useAuth();
   const { screens, setActiveScreen, loadItems, loadCategories, categories } =
     useItemsStore();
@@ -42,23 +43,18 @@ const ReportedItemsScreen = () => {
     <>
       <Stack.Screen
         options={{
+          headerTitle: "Reported Items",
+          headerTitleAlign: "center",
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ padding: 8 }}
-              onPress={() => router.back()}
-            >
-              <Entypo name="chevron-left" size={24} color="black" />
-            </TouchableOpacity>
-          ),
-          header: () => <Header screenId={screenId} />,
+          headerBackTitle: "Back",
+          // headerTintColor: colors.accent,
         }}
       />
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator
             size="large"
-            color="#A25E5E"
+            color={colors.accent}
             testID="loading-indicator"
           />
         </View>
@@ -78,11 +74,12 @@ const ReportedItemsScreen = () => {
   );
 };
 export default ReportedItemsScreen;
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFF9F0",
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+  });

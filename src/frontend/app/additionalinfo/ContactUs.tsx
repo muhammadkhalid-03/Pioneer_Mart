@@ -17,9 +17,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { useUserStore } from "@/stores/userStore";
 import Constants from "expo-constants";
 import api from "@/types/api";
+import { useTheme } from "../contexts/ThemeContext";
 
 const ContactUs = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const NEXT_PUBLIC_BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { authToken } = useAuth();
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +38,7 @@ const ContactUs = () => {
       const cleanToken = authToken?.trim();
       const user_email = userData?.email;
       const response = await api.post(
-        `${BASE_URL}/otpauth/contact`,
+        `${NEXT_PUBLIC_BASE_URL}/otpauth/contact`,
         { description, user_email },
         {
           headers: {
@@ -125,87 +128,88 @@ const ContactUs = () => {
 
 export default ContactUs;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  text1: {
-    fontSize: 16,
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  text2: {
-    fontSize: 16,
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  formContainer: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#333",
-  },
-  textArea: {
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    minHeight: 120,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  submitButton: {
-    backgroundColor: "#4285F4",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  disabledButton: {
-    backgroundColor: "#a0a0a0",
-  },
-  submitButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  contactInfoContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  contactInfoText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-  },
-  emailContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  emailText: {
-    fontSize: 14,
-    color: "#4285F4",
-    marginLeft: 6,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    contentContainer: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    text1: {
+      fontSize: 16,
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    text2: {
+      fontSize: 16,
+      marginBottom: 30,
+      textAlign: "center",
+    },
+    formContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 10,
+      padding: 16,
+      marginBottom: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 8,
+      color: colors.textPrimary,
+    },
+    textArea: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: "#ddd",
+      borderRadius: 8,
+      minHeight: 120,
+      padding: 12,
+      fontSize: 16,
+      marginBottom: 16,
+    },
+    submitButton: {
+      backgroundColor: colors.accent,
+      borderRadius: 8,
+      padding: 14,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    disabledButton: {
+      backgroundColor: colors.border,
+    },
+    submitButtonText: {
+      color: colors.card,
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    contactInfoContainer: {
+      alignItems: "center",
+      marginTop: 20,
+    },
+    contactInfoText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    emailContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    emailText: {
+      fontSize: 14,
+      color: colors.accent,
+      marginLeft: 6,
+    },
+  });
