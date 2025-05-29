@@ -48,7 +48,7 @@ const ChatScreen = () => {
     const host = baseUrlObj.host; // this includes hostname and port
 
     // construct WebSocket URL with trailing slash
-    socketUrl = `ws://${host}/ws/chat/${roomId}/`;
+    socketUrl = `wss://${host}/ws/chat/${roomId}/`;
 
     //setup event handlers for websocket connection
     ws.current = new WebSocket(socketUrl);
