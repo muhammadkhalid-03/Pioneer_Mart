@@ -23,6 +23,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useItemsStore } from "@/stores/listings/use-items-store";
 import { listingsApi } from "@/services/listings-api";
 import { messageFromApiError, getErrorMessage } from "@/utils/error-utils";
+import { showAppToast } from "@/utils/app-toast";
 import {
   appendImageToFormData,
   createCapturedImage,
@@ -216,22 +217,12 @@ const EditItem = () => {
         formData,
       );
       useItemsStore.getState().updateItem(response.data);
-
-      Alert.alert("Success", "Item edited successfully", [
-        {
-          text: "OK",
-          onPress: () => {
-            // Go back to previous screen (which would be ItemDetails) with refreshed data
-            router.back();
-
-            // pass the updated item data back through URL params
-            router.setParams({
-              item: JSON.stringify(response.data),
-              refreshKey: Date.now().toString(),
-            });
-          },
-        },
-      ]);
+      showAppToast({
+        type: "success",
+        text1: "Updated",
+        text2: "Item edited successfully",
+      });
+      router.replace("/(tabs)");
     } catch (error) {
       console.error("Error editting item:", error);
       Alert.alert("Error", getErrorMessage(error));
