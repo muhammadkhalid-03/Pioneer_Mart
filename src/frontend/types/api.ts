@@ -17,8 +17,11 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+const DEFAULT_API_URL = "https://env-2325023.us.reclaim.cloud";
+const API_BASE_URL = Constants?.expoConfig?.extra?.apiUrl || DEFAULT_API_URL;
+
 const api = axios.create({
-  baseURL: Constants?.expoConfig?.extra?.apiUrl,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -43,7 +46,7 @@ function refreshAccessTokenOnce(): Promise<string | null> {
           return null;
         }
         const response = await axios.post(
-          `${Constants?.expoConfig?.extra?.apiUrl}/api/v1/auth/token/refresh/`,
+          `${API_BASE_URL}/api/v1/auth/token/refresh/`,
           { refresh: refreshToken },
           {
             headers: {

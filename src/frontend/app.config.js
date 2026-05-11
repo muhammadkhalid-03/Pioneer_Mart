@@ -1,6 +1,10 @@
 if (!process.env.BASE_URL) {
   require('dotenv').config({ path: '.env.development' })
 }
+
+const DEFAULT_API_URL = "https://env-2325023.us.reclaim.cloud";
+const apiUrl = process.env.BASE_URL || DEFAULT_API_URL;
+
 module.exports = {
   expo: {
     name: "PioneerMart",
@@ -65,7 +69,7 @@ module.exports = {
       router: {
         origin: false
       },
-      apiUrl: process.env.BASE_URL,
+      apiUrl,
       SE_API_USER: process.env.SE_API_USER,
       SE_SECRET_KEY: process.env.SE_SECRET_KEY,
       SE_WORKFLOW: process.env.SE_WORKFLOW,
