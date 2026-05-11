@@ -23,7 +23,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useItemsStore } from "@/stores/listings/use-items-store";
 import { listingsApi } from "@/services/listings-api";
 import { messageFromApiError, getErrorMessage } from "@/utils/error-utils";
-import { createImageFormValue } from "@/utils/image-upload";
+import {
+  appendImageToFormData,
+  createCapturedImage,
+  createExistingImage,
+  createPickedImage,
+  isExistingImage,
+  type UploadableImage,
+} from "@/utils/image-upload";
 import { useTheme } from "@/app/contexts/theme-context";
 
 const EditItem = () => {
@@ -47,16 +54,16 @@ const EditItem = () => {
   );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<UploadableImage[]>([]);
   const [modifiedImages, setModifiedImages] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [loading, setLoading] = useState(false);
   const { categories } = useItemsStore();
 
   useEffect(() => {
-    const imageArray = [];
+    const imageArray: UploadableImage[] = [];
     if (originalItem.image) {
-      imageArray.push(originalItem.image);
+      imageArray.push(createExistingImage(originalItem.image));
     }
     // add additional iamges if they exist
     if (
@@ -64,7 +71,7 @@ const EditItem = () => {
       Array.isArray(originalItem.additional_images)
     ) {
       const additionalUrls = originalItem.additional_images.map(
-        (img: any) => img.image,
+        (img: any) => createExistingImage(img.image),
       );
       imageArray.push(...additionalUrls);
     }
@@ -97,14 +104,14 @@ const EditItem = () => {
       allowsMultipleSelection: true, //TODO: this only works on ios
     });
     if (!result.canceled && result.assets.length > 0) {
-      const newImages = result.assets.map((asset) => asset.uri);
+      const newImages = result.assets.map(createPickedImage);
       setImages((prevImages) => [...prevImages, ...newImages]); //update image uris
       setModifiedImages(true);
     }
   };
   // Function to handle this image
   const handleCapturedImage = (imageUri: string) => {
-    setImages((prevImages) => [...prevImages, imageUri]);
+    setImages((prevImages) => [...prevImages, createCapturedImage(imageUri)]);
     setModifiedImages(true);
     setShowCamera(false);
   };
@@ -114,7 +121,7 @@ const EditItem = () => {
     setModifiedImages(true);
   };
 
-  const prepareFormData = () => {
+  const prepareFormData = async () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
@@ -126,16 +133,23 @@ const EditItem = () => {
     if (modifiedImages && images.length > 0) {
       // process primary image (i.e. the first one in the array)
       const image = images[0];
-      formData.append("image", createImageFormValue(image));
+      if (!isExistingImage(image)) {
+        await appendImageToFormData(formData, "image", image);
+      }
     }
     // process additional images if there are any
     if (images.length > 1) {
       // skip the first image since it's already added as the primary image
       for (let i = 1; i < images.length; i++) {
         const additionalImage = images[i];
-        formData.append(
+        if (isExistingImage(additionalImage)) {
+          continue;
+        }
+        await appendImageToFormData(
+          formData,
           "additional_images",
-          createImageFormValue(additionalImage, `image_${i}.jpg`),
+          additionalImage,
+          `image_${i}.jpg`,
         );
       }
     }
@@ -160,7 +174,7 @@ const EditItem = () => {
 
     try {
       setLoading(true);
-      const formData = prepareFormData();
+      const formData = await prepareFormData();
 
       const combinedText = `${title}\n${description}`;
       try {
@@ -176,9 +190,12 @@ const EditItem = () => {
       }
 
       for (const image of images) {
-        if (image) {
+        if (!image.uri || isExistingImage(image)) {
+          continue;
+        }
+        if (image.uri) {
           const imageFormData = new FormData();
-          imageFormData.append("image", createImageFormValue(image));
+          await appendImageToFormData(imageFormData, "image", image);
           try {
             await listingsApi.moderateImage(imageFormData);
           } catch (imgError: unknown) {
@@ -351,7 +368,7 @@ const EditItem = () => {
                     renderItem={({ item, index }) => (
                       <View style={styles.imageContainer}>
                         <Image
-                          source={{ uri: item }}
+                          source={{ uri: item.uri }}
                           style={styles.thumbnailImage}
                         />
                         <TouchableOpacity

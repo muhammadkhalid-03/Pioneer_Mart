@@ -24,7 +24,12 @@ import { useUserStore } from "@/stores/user-store";
 import { listingsApi } from "@/services/listings-api";
 import { showAppToast } from "@/utils/app-toast";
 import { messageFromApiError, getErrorMessage } from "@/utils/error-utils";
-import { createImageFormValue } from "@/utils/image-upload";
+import {
+  appendImageToFormData,
+  createCapturedImage,
+  createPickedImage,
+  type UploadableImage,
+} from "@/utils/image-upload";
 import { useTheme } from "../contexts/theme-context";
 
 const AddItemScreen = () => {
@@ -37,7 +42,7 @@ const AddItemScreen = () => {
   const [formData, setFormData] = useState(initialFormState);
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<UploadableImage[]>([]);
   const [showCamera, setShowCamera] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -77,7 +82,7 @@ const AddItemScreen = () => {
 
   // function to add selected images to the images array
   const handleCapturedImage = (imageUri: string) => {
-    setImages((prevImages) => [...prevImages, imageUri]);
+    setImages((prevImages) => [...prevImages, createCapturedImage(imageUri)]);
     setShowCamera(false);
   };
 
@@ -112,7 +117,7 @@ const AddItemScreen = () => {
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const newImages = result.assets.map((asset) => asset.uri);
+      const newImages = result.assets.map(createPickedImage);
       setImages((prevImages) => [...prevImages, ...newImages]);
     }
   };
@@ -129,7 +134,7 @@ const AddItemScreen = () => {
     return true;
   };
 
-  const createFormData = () => {
+  const createFormData = async () => {
     const { name, description, price, category } = formData;
     const formDataObj = new FormData();
 
@@ -148,16 +153,18 @@ const AddItemScreen = () => {
 
     if (images.length > 0) {
       const primaryImage = images[0];
-      formDataObj.append("image", createImageFormValue(primaryImage));
+      await appendImageToFormData(formDataObj, "image", primaryImage);
     }
 
     if (images.length > 1) {
       // skip the first image since it's already added as the primary image
       for (let i = 1; i < images.length; i++) {
         const additionalImage = images[i];
-        formDataObj.append(
+        await appendImageToFormData(
+          formDataObj,
           "additional_images",
-          createImageFormValue(additionalImage, `image_${i}.jpg`),
+          additionalImage,
+          `image_${i}.jpg`,
         );
       }
     }
@@ -185,9 +192,9 @@ const AddItemScreen = () => {
       }
 
       for (const image of images) {
-        if (image) {
+        if (image.uri) {
           const imageFormData = new FormData();
-          imageFormData.append("image", createImageFormValue(image));
+          await appendImageToFormData(imageFormData, "image", image);
           try {
             await listingsApi.moderateImage(imageFormData);
           } catch (imgError: unknown) {
@@ -202,7 +209,7 @@ const AddItemScreen = () => {
           }
         }
       }
-      const formDataObj = createFormData();
+      const formDataObj = await createFormData();
       await listingsApi.createListing(formDataObj);
       resetForm(); //reset the form after submitting
       showAppToast({
@@ -349,7 +356,7 @@ const AddItemScreen = () => {
                   renderItem={({ item, index }) => (
                     <View style={styles.imageContainer}>
                       <Image
-                        source={{ uri: item }}
+                        source={{ uri: item.uri }}
                         style={styles.thumbnailImage}
                       />
                       <TouchableOpacity
