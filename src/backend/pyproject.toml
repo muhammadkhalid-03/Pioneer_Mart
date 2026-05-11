@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pioneer-mart"
+version = "0.1.0"
+description = "Market software for Grinnell College"
+readme = "../../README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "asgiref==3.8.1",
+    "boto3==1.37.38",
+    "certifi==2025.1.31",
+    "charset-normalizer==3.4.1",
+    "django==4.2.20",
+    "django-cors-headers==4.4.0",
+    "django-filter==24.3",
+    "django-storages==1.14.6",
+    "djangorestframework==3.15.2",
+    "djangorestframework-simplejwt==5.3.1",
+    "dotenv>=0.9.9",
+    "gunicorn==23.0.0",
+    "idna==3.10",
+    "pillow==10.4.0",
+    "psycopg2-binary>=2.9.9",
+    "pyjwt==2.9.0",
+    "python-dotenv==1.0.1",
+    "requests==2.32.3",
+    "sqlparse==0.5.3",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=5.1.3",
+    "djangorestframework-stubs>=3.15.1",
+    "mypy>=1.10.0",
+    "pyright>=1.1.377",
+    "pytest>=8.2.0",
+    "pytest-django>=4.8.0",
+    "ruff>=0.5.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = ""
+DJANGO_SETTINGS_MODULE = "backend.settings.test"
+testpaths = [
+    ".",
+]
+
+[tool.mypy]
+mypy_path = "."
+check_untyped_defs = true
+disallow_any_generics = true
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+
+[tool.pyright]
+include = ["."]
+exclude = [
+    ".venv",
+    "media",
+    ".pytest_cache",
+    ".ruff_cache",
+    "**/migrations",
+    "**/__pycache__",
+]
+typeCheckingMode = "basic"

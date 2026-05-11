@@ -1,5 +1,5 @@
-import { Message, WebSocketMessage } from "@/types/chat";
-import { useEffect, useRef, useState } from "react";
+import { Message } from "@/types/chat";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   ListRenderItemInfo,
@@ -12,18 +12,17 @@ import {
   TextInput,
   SafeAreaView,
 } from "react-native";
-import axios from "axios";
 import React from "react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useUserStore } from "@/stores/userStore";
-import { useAuth } from "../contexts/AuthContext";
+import { useUserStore } from "@/stores/user-store";
 import { Entypo } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import api from "@/types/api";
+import { useTheme } from "../contexts/theme-context";
 
 const ChatScreen = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
-  const { id, username, user_id, itemTitle, receiver_id, item_id } =
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const { id, username, itemTitle, receiver_id, item_id } =
     useLocalSearchParams();
   const itemId = typeof item_id === "string" ? item_id : "";
 
@@ -34,123 +33,112 @@ const ChatScreen = () => {
   const item = typeof itemTitle === "string" ? itemTitle : "Item";
   const [messages, setMessages] = useState<Message[]>([]); // state for all messagees in the chat
   const [messageText, setMessageText] = useState<string>(""); // state for the actual content of a message
-  const [connected, setConnected] = useState<boolean>(false); // state for whether websocket is connected
-  const ws = useRef<WebSocket | null>(null); // react ref for websocket needed for chatting w/ persistent connection
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const lastMessageIdRef = useRef<string | null>(null);
   const flatListRef = useRef<FlatList | null>(null); // react ref for interacting with FlatList
-  const authToken = useAuth(); // auth token
-  const { userData } = useUserStore(); //userData from user store
+  const { userData } = useUserStore();
 
-  useEffect(() => {
-    // connect to websocket
-    setMessages([]);
-    let socketUrl = "";
-    const baseUrlObj = new URL(BASE_URL);
-    const host = baseUrlObj.host; // this includes hostname and port
+  const transformMessage = useCallback(
+    (msg: any): Message => ({
+      id: msg.id.toString(),
+      content: msg.content,
+      userId: msg.sender?.id?.toString() || "",
+      receiverId: receiverId?.toString() || null,
+      username: msg.sender?.username || "Unknown",
+      timestamp: msg.timestamp,
+    }),
+    [receiverId]
+  );
 
-    // construct WebSocket URL with trailing slash
-    socketUrl = `ws://${host}/ws/chat/${roomId}/`;
-
-    //setup event handlers for websocket connection
-    ws.current = new WebSocket(socketUrl);
-    ws.current.onopen = () => {
-      setConnected(true); //socket now connected
-    };
-    ws.current.onmessage = (e) => {
-      const data = JSON.parse(e.data) as WebSocketMessage;
-      // update state for messages when user receives a message
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          id: Math.random().toString(),
-          content: data.message,
-          userId: String(data.user_id),
-          receiverId:
-            data.receiver_id !== undefined ? String(data.receiver_id) : null,
-          username: data.username || "Unknown",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    };
-    ws.current.onerror = (e) => {
-      console.error("WebSocket error:", e);
-    };
-    ws.current.onclose = () => {
-      setConnected(false);
-    };
-
-    // once event handlers are setup, fetch chat history & mark room
-    // as read cause we're already in chat room
-    fetchChatHistory();
-    markRoomAsRead();
-
-    // this return is essentially a cleanup function. React will
-    // automatically call this if roomId changes or the component unmounts
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-        ws.current = null;
-      }
-      setMessages([]);
-    };
-  }, [roomId]); // this hook runs whenever roomId changes. In other words, whenever the user navigates to a new chat room
-
-  const markRoomAsRead = async (): Promise<void> => {
+  const markRoomAsRead = useCallback(async (): Promise<void> => {
     try {
-      const cleanToken = authToken.authToken?.trim();
-      await api.post(
-        `${BASE_URL}/api/chat/rooms/${roomId}/mark-read/`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${cleanToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await api.post(`/api/v1/chat-rooms/${roomId}/read/`, {});
     } catch (error) {
       console.error("Error marking room as read:", error);
     }
-  };
+  }, [roomId]);
 
-  const fetchChatHistory = async (): Promise<void> => {
+  const fetchChatHistory = useCallback(async (): Promise<void> => {
     try {
-      const cleanToken = authToken.authToken?.trim();
       const response = await api.get(
-        `${BASE_URL}/api/chat/history/${roomId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${cleanToken}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
+        `/api/v1/chat-rooms/${roomId}/messages/`
       );
-      // Transform the data to ensure consistent format
-      const transformedMessages = response.data.messages.map((msg: any) => ({
-        id: msg.id.toString(),
-        content: msg.content,
-        userId: msg.sender?.id?.toString() || "",
-        username: msg.sender?.username || "Unknown",
-        timestamp: msg.timestamp,
-      }));
+      const transformedMessages = response.data.messages.map(transformMessage);
       setMessages(transformedMessages);
+      lastMessageIdRef.current =
+        transformedMessages[transformedMessages.length - 1]?.id || null;
     } catch (error) {
       console.error("Error fetching chat history:", error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [roomId, transformMessage]);
 
-  const sendMessage = (): void => {
-    if (messageText.trim() === "" || !connected || !ws.current) return;
-    const messageData: WebSocketMessage = {
-      message: messageText,
-      user_id: userData?.id,
-      receiver_id: receiverId,
+  const fetchNewMessages = useCallback(async (): Promise<void> => {
+    try {
+      const response = await api.get(
+        `/api/v1/chat-rooms/${roomId}/messages/`,
+        {
+          params: lastMessageIdRef.current
+            ? { after_id: lastMessageIdRef.current }
+            : undefined,
+        }
+      );
+      const newMessages = response.data.messages.map(transformMessage);
+      if (newMessages.length === 0) {
+        return;
+      }
+
+      setMessages((prevMessages) => {
+        const existingIds = new Set(prevMessages.map((message) => message.id));
+        const dedupedNewMessages = newMessages.filter(
+          (message: Message) => !existingIds.has(message.id)
+        );
+        return [...prevMessages, ...dedupedNewMessages];
+      });
+      lastMessageIdRef.current = newMessages[newMessages.length - 1]?.id || null;
+    } catch (error) {
+      console.error("Error fetching new chat messages:", error);
+    }
+  }, [roomId, transformMessage]);
+
+  useEffect(() => {
+    setMessages([]);
+    setIsLoading(true);
+    lastMessageIdRef.current = null;
+
+    fetchChatHistory();
+    markRoomAsRead();
+    const intervalId = setInterval(() => {
+      fetchNewMessages();
+    }, 4000);
+
+    return () => {
+      clearInterval(intervalId);
+      setMessages([]);
+      lastMessageIdRef.current = null;
     };
+  }, [fetchChatHistory, fetchNewMessages, markRoomAsRead, roomId]);
 
-    // send a message
-    ws.current.send(JSON.stringify(messageData));
-    setMessageText("");
-  };
+  const sendMessage = useCallback(async (): Promise<void> => {
+    if (messageText.trim() === "" || !receiverId) return;
+
+    try {
+      const response = await api.post(
+        `/api/v1/chat-rooms/${roomId}/messages/send/`,
+        {
+          content: messageText.trim(),
+          receiver_id: receiverId,
+        }
+      );
+      const sentMessage = transformMessage(response.data);
+      setMessages((prevMessages) => [...prevMessages, sentMessage]);
+      lastMessageIdRef.current = sentMessage.id;
+      setMessageText("");
+    } catch (error) {
+      console.error("Error sending chat message:", error);
+    }
+  }, [messageText, receiverId, roomId, transformMessage]);
 
   const renderMessage = ({ item }: ListRenderItemInfo<Message>) => {
     // this might seem useless but my stupid ass messed up the
@@ -172,8 +160,15 @@ const ChatScreen = () => {
         {!isMyMessage && (
           <Text style={styles.messageUsername}>{item.username}</Text>
         )}
-        <Text style={styles.messageContent}>{item.content}</Text>
-        <Text style={styles.messageTime}>
+        <Text
+          style={[
+            styles.messageContent,
+            isMyMessage && styles.myMessageContent,
+          ]}
+        >
+          {item.content}
+        </Text>
+        <Text style={[styles.messageTime, isMyMessage && styles.myMessageTime]}>
           {new Date(item.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -182,25 +177,25 @@ const ChatScreen = () => {
       </View>
     );
   };
-  if (Platform.OS === "android") {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Stack.Screen
-          options={{
-            headerTitle: "Chat Unavailable",
-            headerShown: true,
-            headerTitleAlign: "center",
-            headerBackTitle: "Back",
-          }}
-        />
-        <View style={styles.unavailableContainer}>
-          <Text style={styles.unavailableText}>
-            Chat is currently unavailable on Android devices.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // if (Platform.OS === "android") {
+  //   return (
+  //     <SafeAreaView style={styles.container}>
+  //       <Stack.Screen
+  //         options={{
+  //           headerTitle: "Chat Unavailable",
+  //           headerShown: true,
+  //           headerTitleAlign: "center",
+  //           headerBackTitle: "Back",
+  //         }}
+  //       />
+  //       <View style={styles.unavailableContainer}>
+  //         <Text style={styles.unavailableText}>
+  //           Chat is currently unavailable on Android devices.
+  //         </Text>
+  //       </View>
+  //     </SafeAreaView>
+  //   );
+  // }
 
   return (
     <>
@@ -215,7 +210,13 @@ const ChatScreen = () => {
                 })
               }
             >
-              <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "bold",
+                  color: colors.textPrimary,
+                }}
+              >
                 {roomName} - {item}
               </Text>
             </TouchableOpacity>
@@ -223,6 +224,11 @@ const ChatScreen = () => {
           headerShown: true,
           headerTitleAlign: "center",
           headerBackTitle: "Back",
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.textPrimary,
+          headerShadowVisible: false,
         }}
       />
       <SafeAreaView style={styles.container}>
@@ -256,7 +262,9 @@ const ChatScreen = () => {
               onChangeText={setMessageText}
               placeholder="Type a message..."
               returnKeyType="send"
-              onSubmitEditing={sendMessage}
+              onSubmitEditing={() => {
+                void sendMessage();
+              }}
               autoFocus={false}
               multiline
               maxLength={500}
@@ -264,12 +272,18 @@ const ChatScreen = () => {
             <TouchableOpacity
               style={[
                 styles.sendButton,
-                !messageText.trim() && styles.sendButtonDisabled,
+                (!messageText.trim() || isLoading) && styles.sendButtonDisabled,
               ]}
-              onPress={sendMessage}
-              disabled={!messageText.trim()}
+              onPress={() => {
+                void sendMessage();
+              }}
+              disabled={!messageText.trim() || isLoading}
             >
-              <Entypo name="paper-plane" size={20} color="#fff" />
+              <Entypo
+                name="paper-plane"
+                size={20}
+                color={colors.accentContrast}
+              />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -280,10 +294,23 @@ const ChatScreen = () => {
 
 export default ChatScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  background: string;
+  card: string;
+  cardMuted: string;
+  input: string;
+  accent: string;
+  accentMuted: string;
+  accentContrast: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  disabled: string;
+}) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   keyboardAvoid: {
     flex: 1,
@@ -293,24 +320,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: colors.border,
   },
   roomName: {
     fontSize: 18,
     fontWeight: "bold",
+    color: colors.textPrimary,
   },
   connectionIndicator: {
     width: 10,
     height: 10,
     borderRadius: 5,
-  },
-  connected: {
-    backgroundColor: "green",
-  },
-  disconnected: {
-    backgroundColor: "red",
   },
   messageList: {
     flex: 1,
@@ -321,14 +343,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
     maxWidth: "80%",
+    borderWidth: 1,
   },
   myMessageBubble: {
-    backgroundColor: "#DCF8C6",
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
     alignSelf: "flex-end",
     borderBottomRightRadius: 0,
   },
   otherMessageBubble: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     alignSelf: "flex-start",
     borderBottomLeftRadius: 0,
   },
@@ -336,42 +361,56 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12,
     marginBottom: 4,
+    color: colors.accentMuted,
   },
   messageContent: {
     fontSize: 16,
+    color: colors.textPrimary,
+  },
+  myMessageContent: {
+    color: colors.accentContrast,
   },
   messageTime: {
     fontSize: 10,
-    color: "#888",
+    color: colors.textSecondary,
     alignSelf: "flex-end",
     marginTop: 4,
   },
+  myMessageTime: {
+    color: colors.accentContrast,
+    opacity: 0.85,
+  },
   inputContainer: {
     flexDirection: "row",
-    padding: 8,
-    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 14,
+    backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: colors.border,
   },
   input: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 20,
+    backgroundColor: colors.input,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginRight: 8,
+    color: colors.textPrimary,
   },
   sendButton: {
-    backgroundColor: "#007bff",
-    borderRadius: 20,
+    backgroundColor: colors.accent,
+    borderRadius: 22,
     paddingHorizontal: 16,
     justifyContent: "center",
   },
   sendButtonDisabled: {
-    backgroundColor: "#cccccc",
+    backgroundColor: colors.disabled,
   },
   sendButtonText: {
-    color: "#fff",
+    color: colors.accentContrast,
     fontWeight: "bold",
   },
   unavailableContainer: {
@@ -383,7 +422,7 @@ const styles = StyleSheet.create({
   unavailableText: {
     textAlign: "center",
     fontSize: 16,
-    color: "#444",
+    color: colors.textSecondary,
     lineHeight: 24,
   },
 });

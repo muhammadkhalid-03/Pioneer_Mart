@@ -1,54 +1,40 @@
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import SearchBar from "./SearchBar";
-import { useRoute, useFocusEffect } from "@react-navigation/native";
+import SearchBar from "./search-bar";
+import { useRoute } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { router } from "expo-router";
 import React, { useEffect } from "react";
 import { ScreenId } from "@/types/types";
-import { useChatStore } from "@/stores/chatStore";
-import { useAuth } from "@/app/contexts/AuthContext";
+import { useChatStore } from "@/stores/chat-store";
 import { Badge } from "react-native-paper";
-import { useTheme } from "@/app/contexts/ThemeContext";
+import { useTheme } from "@/app/contexts/theme-context";
 
-type HeaderProps = {
+interface HeaderProps {
   screenId: ScreenId;
-};
+}
 
-const Header: React.FC<HeaderProps> = ({ screenId }) => {
-  const { colors } = useTheme();
+const Header = ({ screenId }: HeaderProps) => {
   const insets = useSafeAreaInsets();
   const route = useRoute();
   const { unreadCount, fetchUnreadCount } = useChatStore();
-  const { authToken } = useAuth();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   useEffect(() => {
-    if (authToken) {
-      fetchUnreadCount(authToken);
-    }
-    const intervalId = setInterval(() => {
-      fetchUnreadCount(authToken);
-    }, 120000); // check unread count every minute
-
+    fetchUnreadCount();
+    const intervalId = setInterval(fetchUnreadCount, 10000);
     return () => clearInterval(intervalId);
-  }, [authToken]); //runs when authToken changes
-
-  // Refresh unread count when screen comes into focus
-  React.useCallback(() => {
-    if (authToken) {
-      fetchUnreadCount(authToken);
-    }
-    return () => {};
-  }, [authToken]);
+  }, [fetchUnreadCount]);
 
   const handleChatPress = () => {
-    router.push("/ChatRoomScreen");
+    router.push("/chat-room-screen");
   };
 
   const isNotificationScreen = screenId === "notifications";
   const showBackButton =
-    route.name === "additionalinfo/MyItems" ||
-    route.name === "additionalinfo/ReportedItems";
+    route.name === "additional-info/my-items" ||
+    route.name === "additional-info/reported-items";
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -59,7 +45,7 @@ const Header: React.FC<HeaderProps> = ({ screenId }) => {
             onPress={() => router.back()}
             testID="back-button"
           >
-            <Entypo name="chevron-left" size={24} color="black" />
+            <Entypo name="chevron-left" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.row}>
             {!isNotificationScreen && (
@@ -71,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ screenId }) => {
               onPress={handleChatPress}
               style={styles.chatWrapper}
             >
-              <Entypo name="chat" size={24} color="black" />
+              <Entypo name="chat" size={24} color={colors.textPrimary} />
               {unreadCount > 0 && (
                 <Badge style={styles.badge} size={18}>
                   {unreadCount > 99 ? "99+" : unreadCount}
@@ -88,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ screenId }) => {
             onPress={handleChatPress}
             style={styles.chatWrapper}
           >
-            <Entypo name="chat" size={24} color="black" />
+            <Entypo name="chat" size={24} color={colors.textPrimary} />
             {unreadCount > 0 && (
               <Badge style={styles.badge} size={18}>
                 {unreadCount > 99 ? "99+" : unreadCount.toString()}
@@ -105,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ screenId }) => {
             onPress={handleChatPress}
             style={styles.chatWrapper}
           >
-            <Entypo name="chat" size={24} color="black" />
+            <Entypo name="chat" size={24} color={colors.textPrimary} />
             {unreadCount > 0 && (
               <Badge style={styles.badge} size={18}>
                 {unreadCount > 99 ? "99+" : unreadCount}
@@ -120,11 +106,17 @@ const Header: React.FC<HeaderProps> = ({ screenId }) => {
 
 export default Header;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  background: string;
+  textPrimary: string;
+  accent: string;
+  accentContrast: string;
+}) =>
+  StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: "#FFF9F0",
+    backgroundColor: colors.background,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -147,7 +139,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#333",
+    color: colors.textPrimary,
     textAlign: "center",
     flex: 1,
   },
@@ -161,8 +153,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: "red",
-    color: "white",
+    backgroundColor: colors.accent,
+    color: colors.accentContrast,
     fontSize: 10,
   },
   backButton: {

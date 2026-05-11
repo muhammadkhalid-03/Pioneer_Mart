@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from items.serializers import ItemSerializer
 from .models import ItemReport
-from items.models import Listing
 
 
 class ReportedItemSerializer(serializers.ModelSerializer):

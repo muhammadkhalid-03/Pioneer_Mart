@@ -7,7 +7,6 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,18 +15,45 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('purchase', 'Purchase Request'), ('chat', 'Chat Message')], max_length=20)),
-                ('message', models.CharField(max_length=255)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('is_read', models.BooleanField(default=False)),
-                ('related_item', models.CharField(blank=True, max_length=100, null=True)),
-                ('recipient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("purchase", "Purchase Request"),
+                            ("chat", "Chat Message"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("message", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("is_read", models.BooleanField(default=False)),
+                (
+                    "related_item",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "recipient",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notifications",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

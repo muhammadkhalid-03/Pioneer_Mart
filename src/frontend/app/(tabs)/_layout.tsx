@@ -1,22 +1,23 @@
 import { Stack, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React, { useEffect, useRef, useState } from "react";
-import { AppInitialier } from "@/components/AppInitializer";
-import { AnimatedTabBarButton } from "@/components/AnimatedTabBarButton";
-import { useAuth } from "../contexts/AuthContext";
-import { useNotification } from "../contexts/NotificationContext";
+import React, { useEffect } from "react";
+import { AppInitializer } from "@/components/app-initializer";
+import { AnimatedTabBarButton } from "@/components/animated-tab-bar-button";
+import { PushNotificationManager } from "@/components/push-notification-manager";
+import { useNotification } from "../contexts/notification-context";
+import { useTheme } from "../contexts/theme-context";
 
 // This defines the basic layout of the app after user's logged in
 export default function TabLayout() {
-  const { authToken } = useAuth();
   const { unreadCount, refreshUnreadCount } = useNotification();
+  const { colors } = useTheme();
 
   useEffect(() => {
     refreshUnreadCount();
     const interval = setInterval(refreshUnreadCount, 120000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshUnreadCount]);
 
   return (
     <>
@@ -28,17 +29,18 @@ export default function TabLayout() {
           animation: "none", // Optional: removes animation which can help with navigation issues
         }}
       />
-      <AppInitialier />
+      <AppInitializer />
+      <PushNotificationManager />
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: "#FFF9F0",
-            borderTopColor: "#FFE0B2",
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
             paddingTop: 6,
           },
-          tabBarActiveTintColor: "#C98474",
-          tabBarInactiveTintColor: "#888888",
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.textSecondary,
           tabBarLabelStyle: {
             fontSize: 12,
           },
@@ -53,7 +55,7 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "home" : "home-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
@@ -68,17 +70,23 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "notifications" : "notifications-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
         />
 
         <Tabs.Screen
-          name="additem"
+          name="add-item"
           options={{
             title: "Add Item",
-            tabBarIcon: () => <Ionicons name="add" size={24} color="black" />,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="add"
+                size={24}
+                color={focused ? colors.accent : colors.textSecondary}
+              />
+            ),
           }}
         />
         <Tabs.Screen
@@ -89,7 +97,7 @@ export default function TabLayout() {
               <MaterialIcons
                 name={focused ? "favorite" : "favorite-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}
@@ -102,7 +110,7 @@ export default function TabLayout() {
               <Ionicons
                 name={focused ? "settings" : "settings-outline"}
                 size={22}
-                color={focused ? "#9E8FB2" : "#888888"}
+                color={focused ? colors.accent : colors.textSecondary}
               />
             ),
           }}

@@ -4,23 +4,32 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('items', '0001_initial'),
+        ("items", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ItemImage',
+            name="ItemImage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to='item_additional_images')),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("image", models.ImageField(upload_to="item_additional_images")),
+                ("uploaded_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.AddField(
-            model_name='listing',
-            name='additional_images',
-            field=models.ManyToManyField(blank=True, related_name='listings', to='items.itemimage'),
+            model_name="listing",
+            name="additional_images",
+            field=models.ManyToManyField(
+                blank=True, related_name="listings", to="items.itemimage"
+            ),
         ),
     ]

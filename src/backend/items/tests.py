@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Category
+from categories.models import Category
 from .models import Listing
+
 
 class ListingModelTest(TestCase):
     def setUp(self):

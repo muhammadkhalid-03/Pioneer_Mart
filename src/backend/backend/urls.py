@@ -16,19 +16,19 @@ Including another URLconf
 """
 
 from django.conf import settings
-from django.contrib import admin
-from django.urls import path, include
 from django.conf.urls.static import static
+from django.urls import include, path
+from rest_framework.schemas import get_schema_view
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("otpauth/", include("otpauth.urls")),
-    path("api/", include("items.urls")),
-    path("api/", include("categories.urls")),
-    path("api/", include("userprofile.urls")),
-    path("api/", include("purchase_requests.urls")),
-    path("api/", include("chat.urls")),
-    path("api/", include("report.urls")),
-    path("api/", include("notifications.urls")),
+    path("api/schema/", get_schema_view(title="Pioneer Mart API"), name="api-schema"),
+    path("api/v1/auth/", include("otpauth.urls")),
+    path("api/v1/", include("items.urls")),
+    path("api/v1/", include("categories.urls")),
+    path("api/v1/", include("userprofile.urls")),
+    path("api/v1/", include("purchase_requests.urls")),
+    path("api/v1/", include("chat.urls")),
+    path("api/v1/", include("report.urls")),
+    path("api/v1/", include("notifications.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,8 +1,8 @@
 # Import Modules
-import django
 from django.db import models
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
@@ -35,10 +35,11 @@ class OTP(models.Model):
                 self.otp = "012345"
             else:
                 self.otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
+            # self.otp = "".join([str(random.randint(0, 9)) for _ in range(6)])
 
         if not self.expires_at:
             # Set expiry to 10 minutes from now
-            self.expires_at = django.utils.timezone.now() + timedelta(minutes=10)
+            self.expires_at = timezone.now() + timedelta(minutes=10)
 
         super().save(*args, **kwargs)
 
@@ -46,7 +47,7 @@ class OTP(models.Model):
         """
         Returns if the given OTP is valid
         """
-        return django.utils.timezone.now() <= self.expires_at
+        return timezone.now() <= self.expires_at
 
     def is_valid_email(self):
         """
@@ -54,8 +55,9 @@ class OTP(models.Model):
         """
         try:
             validate_email(self.email)
-        except ValidationError as e:
+        except ValidationError:
             return False
+        return True
 
     def __str__(self):
         """

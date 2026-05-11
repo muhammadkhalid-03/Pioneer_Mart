@@ -26,8 +26,8 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     user_count = serializers.SerializerMethodField()
     message_count = serializers.SerializerMethodField()
     item_title = serializers.SerializerMethodField()
-    unread_count = serializers.IntegerField(read_only=True, default=0)
-    last_message_time = serializers.DateTimeField(read_only=True, allow_null=True)
+    unread_count = serializers.SerializerMethodField()
+    last_message_time = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
@@ -49,6 +49,14 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
     def get_message_count(self, obj):
         return obj.messages.count()
+
+    def get_unread_count(self, obj):
+        # Some endpoints annotate unread_count; others don't.
+        return int(getattr(obj, "unread_count", 0) or 0)
+
+    def get_last_message_time(self, obj):
+        # Some endpoints annotate last_message_time; others don't.
+        return getattr(obj, "last_message_time", None)
 
     def get_item_title(self, obj):
         from items.models import Listing

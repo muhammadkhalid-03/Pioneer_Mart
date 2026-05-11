@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+from typing import Any, cast
 from .models import UserProfile
 from .serializers import UserSerializer
 
@@ -12,13 +13,11 @@ class UserProfileModelTest(TestCase):
         user = User.objects.create_user(
             username="tester", email="tester@test.com", password="pass"
         )
-        UserProfile.objects.create(user=user)
         self.assertTrue(UserProfile.objects.filter(user=user).exists())
 
     def test_profile_str_method(self):
         user = User.objects.create_user(username="john", email="john@test.com")
-        UserProfile.objects.create(user=user)
-        profile = user.profile
+        profile = UserProfile.objects.get(user=user)
         self.assertEqual(str(profile), "john@test.com's profile")
 
 
@@ -32,21 +31,28 @@ class UserProfileAPITest(TestCase):
 
     def test_get_user_profile(self):
         response = self.client.get(reverse("user-list"))
+        response_data = cast(Any, response).data
+        data = cast(dict[str, Any], response_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"][0]["email"], "tester@test.com")
-        self.assertIn("profile", response.data["results"][0])
+        self.assertEqual(data["results"][0]["email"], "tester@test.com")
+        self.assertIn("profile", data["results"][0])
 
     def test_signup_success(self):
-        self.client.logout()
-        response = self.client.post(reverse("signup"), {"email": "newuser@test.com"})
+        unauthenticated_client = APIClient()
+        response = unauthenticated_client.post(
+            reverse("user-register"),
+            {"email": "newuser@test.com"},
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(User.objects.filter(email="newuser@test.com").exists())
 
     def test_signup_missing_email(self):
-        self.client.logout()
-        response = self.client.post(reverse("signup"), {})
+        unauthenticated_client = APIClient()
+        response = unauthenticated_client.post(reverse("user-register"), {})
+        response_data = cast(Any, response).data
+        data = cast(dict[str, Any], response_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "The email field is required")
+        self.assertEqual(data["error"], "The email field is required")
 
 
 class UserSerializerTest(TestCase):

@@ -18,7 +18,7 @@ Notable competitors include Etsy, Facebook Marketplace, and Poshmark. Etsy is an
 - .github/workflows
   - test_runs.yml
   - tests_npm.yml
-  - tests_python.yml
+  - tests_python_ubuntu.yml
 - reports
   - milestone-2-report.md
 - sprint_reports
@@ -31,35 +31,121 @@ Notable competitors include Etsy, Facebook Marketplace, and Poshmark. Etsy is an
   - sprint_04_planning.md
   - sprint_04.md
   - sprint_05_planning.md
+  - sprint_05.md
 - src
-  - basic_classes
   - frontend
+    - \_\_tests\_\_ (contains all frontend tests)
     - app
+      - (auth)/ (OTP flow files)
+      - (tabs)/ (navigation tab files)
+      - ChatRoomScreen.tsx
+      - \_layout.tsx (root layout)
+      - additionalinfo/
+      - chat/
+        - [id].tsx
+      - contexts/
+      - item
     - assets
     - components
     - constants
     - hooks
     - scripts
+    - services
     - stores
     - types
+    - utils
     - package.json
     - yarn.lock
   - backend
     - backend
     - categories
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - chat
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - consumers.py
+      - models.py
+      - routing.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - items
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - management
+        - \_\_init\_\_.py
+          - commands
+            - \_\_init\_\_.py
+            - wipe_data.py
+      - models.py
+      - pagination.py
+      - permissions.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
+    - management
     - media
+    - notifications
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - utils.py
+      - views.py
     - otpauth
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - purchase_requests
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - report
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - userprofile
+      - \_\_init\_\_.py
+      - admin.py
+      - apps.py
+      - models.py
+      - serializers.py
+      - tests.py
+      - urls.py
+      - views.py
     - manage.py
-    - requirements.txt
 - tests
 - README.md
 
-For the backend and frontend folders, the main packages and tools to run the packages are included. The backend folder contains all the Django frameworks with the required manage.py to run the frameworks. The requirements.txt is required when installing the required packages for running the framework. For the frontend, there are react native frameworks with the yarn framework that is used for testing. There is also package.json for the requirements for running the frontend.
+For the backend and frontend folders, the main packages and tools to run the packages are included. The backend folder contains all the Django frameworks with the required `manage.py` to run the framework. Python dependencies are managed via `uv` and `pyproject.toml`. For the frontend, there are React Native frameworks with npm/yarn and `package.json`.
 
 ## Sprint Reports
 
@@ -88,14 +174,16 @@ Sprint 05 outcomes (named sprint_05.md) can be found in the link in markdown fil
 ## Installing modules
 
 ### Installing Frontend Dependencies
-> cd src/frontend
 
-> npm install
+> \> cd src/frontend
 
-### Installing Frontend Dependencies
-> cd src/backend
+> \> npm install
 
-> pip install -r requirements.txt
+### Installing Backend Dependencies
+
+> \> cd src/backend
+
+> \> uv sync
 
 ## Testing
 
@@ -104,18 +192,18 @@ We are using pytest, flake8, and mypy in order to test our back-end code. For th
 ### How to run the tests?
 
 Backend (Django related)
-Pre-requisite: be in the src/backend folder and install all the requirements from requirements.txt.
+Pre-requisite: be in the src/backend folder and sync dependencies with uv.
 
-> python3 manage.py migrate
+> \> uv run python3 manage.py migrate
 
-> python3 manage.py test
+> \> uv run python3 manage.py test
 
 Frontend
 Pre-requisite: be in the src/frontend folder and install all the requirements from package.json. Also requires react native in one's environment.
 
-> export PATH="./node_modules/.bin:$PATH"
+> \> export PATH="./node_modules/.bin:$PATH"
 
-> yarn jest
+> \> yarn jest
 
 ## Running the Application
 
@@ -127,17 +215,51 @@ Pre-requisites:
 
 Running the Backend (server)
 
-> pip install -r requirements.txt
+From the **repository root**, the quickest path is:
 
-> python3 manage.py migrate
+> \> make dev
 
-> python3 manage.py runserver
+This runs the backend with one command by:
+
+- syncing backend dependencies with `uv`
+- applying Django migrations
+- starting the local development server
+
+If your development Postgres is local, set `HOST=localhost` in `src/backend/.env`.
+
+**Run the backend manually** (equivalent pieces, from `src/backend`):
+
+> \> uv sync --group dev  
+> \> uv run python manage.py migrate  
+> \> uv run python manage.py runserver
+
+Configure database, email, `SECRET_KEY`, and other settings via `src/backend/.env` (see `src/backend/core/settings.py` / `backend/settings` for loaded variables). For SQLite-only local use, some teams set `USE_SQLITE` or rely on development defaults per your project’s `.env` template.
 
 Running the Frontend (npm)
 
-> npm install
+> \> npm install
 
-> npx expo start
+> \> npx expo start
+
+### EAS builds and store submit (production)
+
+Run these from **`src/frontend`** with the [EAS CLI](https://docs.expo.dev/build/introduction/) logged in (`eas login`) and project configured (`eas.json`). Set production environment variables (for example `BASE_URL`, `IOS_APP_STORE_URL`) in the Expo dashboard or build profile so `app.config.js` picks them up at build time.
+
+**iOS — production binary:**
+
+> \> eas build --profile production --platform ios
+
+**iOS — submit to App Store Connect** (after a successful build):
+
+> \> eas submit --platform ios
+
+**Android — internal / preview distribution** (uses the `preview` profile from `eas.json`, not `production`):
+
+> \> eas build --profile preview --platform android
+
+**Wiping Production Data**
+
+> \> uv --directory src/backend run python manage.py wipe_data --settings backend.settings.production
 
 ## Operational Use Cases
 
@@ -184,4 +306,4 @@ For the sprints from 5 and onwards, it would be great if it was evaluated based 
 
 ![Tests](https://github.com/kimseung-gc/Pioneer_Mart/actions/workflows/test_runs.yml/badge.svg)
 ![Tests](https://github.com/kimseung-gc/Pioneer_Mart/actions/workflows/tests_npm.yml/badge.svg)
-![Tests](https://github.com/kimseung-gc/Pioneer_Mart/actions/workflows/tests_python.yml/badge.svg)
+![Tests](https://github.com/kimseung-gc/Pioneer_Mart/actions/workflows/tests_python_ubuntu.yml/badge.svg)

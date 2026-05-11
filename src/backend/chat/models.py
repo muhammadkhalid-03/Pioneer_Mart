@@ -1,9 +1,6 @@
-# chat/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
-from notifications.models import Notification, NotificationType
 
 
 class ChatRoom(models.Model):
@@ -51,18 +48,4 @@ class Message(models.Model):
         if not self.is_read:
             self.is_read = True
             self.read_at = timezone.now()
-            self.save()
-
-    # create the message notification
-    def save(self, *args, **kwargs):
-        # first check if the key is null. If yes then notification is new
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-
-        # create the actual notification
-        if is_new and self.room.item_id:
-            Notification.objects.create(
-                recipient=self.receiver,
-                type=NotificationType.CHAT,
-                message=f"{self.sender.username} sent a message about an item you posted",
-            )
+            self.save(update_fields=["is_read", "read_at"])

@@ -10,11 +10,11 @@ import {
   Switch,
   TextInput,
 } from "react-native";
-import MultiSlider from "@ptomasroos/react-native-multi-slider";
 import { CategoryType, ScreenId } from "@/types/types";
-import { useItemsStore } from "@/stores/useSearchStore";
+import { useItemsStore } from "@/stores/listings/use-items-store";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/app/contexts/theme-context";
 
 /**
  * Props for the Categories component.
@@ -49,6 +49,8 @@ const Categories: React.FC<CategoriesProps> = ({
   categories,
 }: CategoriesProps) => {
   const { screens, filterByCategory } = useItemsStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   // const { selectedCategory } = screens[screenId];
   const screenState = screens[screenId];
   const selectedCategory = screenState.selectedCategory;
@@ -57,15 +59,13 @@ const Categories: React.FC<CategoriesProps> = ({
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [localFilterOptions, setLocalFilterOptions] =
     useState<FilterOptions>(filterOptions);
-  // memoisze price values to prevent excessive re-renders
-  const [sliderValues, setSliderValues] = useState<[number, number]>(
+  const [priceRangeValues, setPriceRangeValues] = useState<[number, number]>(
     filterOptions.priceRange
   );
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLocalFilterOptions(filterOptions);
-    setSliderValues(filterOptions.priceRange);
+    setPriceRangeValues(filterOptions.priceRange);
   }, [filterOptions]);
 
   const handleCategorySelect = (categoryId: string | null) => {
@@ -77,7 +77,7 @@ const Categories: React.FC<CategoriesProps> = ({
   const handleFilterApply = () => {
     const updatedFilterOptions = {
       ...localFilterOptions,
-      priceRange: sliderValues,
+      priceRange: priceRangeValues,
     };
     useItemsStore.getState().applyFilters(screenId, updatedFilterOptions);
     setFilterModalVisible(false);
@@ -85,19 +85,15 @@ const Categories: React.FC<CategoriesProps> = ({
 
   const resetFilters = () => {
     const defaultFilters = {
-      priceRange: [0, 5000] as [number, number],
+      priceRange: [0, 1000] as [number, number],
       hasActivePurchaseRequest: false,
       isSold: false,
       sortByPrice: null,
       sortByDatePosted: null,
     };
     setLocalFilterOptions(defaultFilters);
-    setSliderValues([0, 5000]);
+    setPriceRangeValues([0, 1000]);
     useItemsStore.getState().resetFilters(screenId);
-  };
-
-  const handlePriceRangeChange = (values: number[]) => {
-    setSliderValues([values[0], values[1]]);
   };
 
   return (
@@ -109,7 +105,7 @@ const Categories: React.FC<CategoriesProps> = ({
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
         >
-          <MaterialIcons name="filter-list" size={16} color="#4285F4" />
+          <MaterialIcons name="filter-list" size={16} color={colors.accent} />
           <Text style={styles.filterText}>Filter & Sort</Text>
         </TouchableOpacity>
       </View>
@@ -165,7 +161,11 @@ const Categories: React.FC<CategoriesProps> = ({
           onPress={() => setCategoriesModalVisible(true)}
         >
           <Text style={styles.viewAllCategoriesText}>View All</Text>
-          <MaterialIcons name="keyboard-arrow-right" size={14} color="#555" />
+          <MaterialIcons
+            name="keyboard-arrow-right"
+            size={14}
+            color={colors.accent}
+          />
         </TouchableOpacity>
       </ScrollView>
 
@@ -183,7 +183,11 @@ const Categories: React.FC<CategoriesProps> = ({
               <TouchableOpacity
                 onPress={() => setCategoriesModalVisible(false)}
               >
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.accent}
+                />
               </TouchableOpacity>
             </View>
             <FlatList
@@ -207,7 +211,11 @@ const Categories: React.FC<CategoriesProps> = ({
                     All Items
                   </Text>
                   {selectedCategory === null && (
-                    <MaterialIcons name="check" size={20} color="#4285F4" />
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colors.accent}
+                    />
                   )}
                 </TouchableOpacity>
               }
@@ -230,7 +238,11 @@ const Categories: React.FC<CategoriesProps> = ({
                     {item.name}
                   </Text>
                   {selectedCategory === item.id && (
-                    <MaterialIcons name="check" size={20} color="#4285F4" />
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colors.accent}
+                    />
                   )}
                 </TouchableOpacity>
               )}
@@ -251,7 +263,11 @@ const Categories: React.FC<CategoriesProps> = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filter & Sort</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.accent}
+                />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.filterScrollView}>
@@ -263,10 +279,10 @@ const Categories: React.FC<CategoriesProps> = ({
                     <TextInput
                       style={styles.priceInput}
                       keyboardType="numeric"
-                      value={sliderValues[0].toString()}
+                      value={priceRangeValues[0].toString()}
                       onChangeText={(text) => {
                         const val = parseInt(text) || 0;
-                        setSliderValues([val, sliderValues[1]]);
+                        setPriceRangeValues([val, priceRangeValues[1]]);
                       }}
                       placeholder="Min"
                     />
@@ -274,63 +290,13 @@ const Categories: React.FC<CategoriesProps> = ({
                     <TextInput
                       style={styles.priceInput}
                       keyboardType="numeric"
-                      value={sliderValues[1].toString()}
+                      value={priceRangeValues[1].toString()}
                       onChangeText={(text) => {
                         const val = parseInt(text) || 0;
-                        setSliderValues([sliderValues[0], val]);
+                        setPriceRangeValues([priceRangeValues[0], val]);
                       }}
                       placeholder="Max"
                     />
-                  </View>
-
-                  <View style={styles.sliderContainer}>
-                    <MultiSlider
-                      values={[sliderValues[0], sliderValues[1]]}
-                      min={0}
-                      max={5000}
-                      step={10}
-                      sliderLength={280}
-                      onValuesChange={handlePriceRangeChange}
-                      allowOverlap={false}
-                      minMarkerOverlapDistance={10}
-                      snapped
-                      selectedStyle={{
-                        backgroundColor: "#A25E5E",
-                      }}
-                      unselectedStyle={{
-                        backgroundColor: "#EADFD2",
-                      }}
-                      containerStyle={{
-                        height: 40,
-                      }}
-                      markerStyle={{
-                        backgroundColor: "#A25E5E",
-                        height: 24,
-                        width: 24,
-                        borderRadius: 12,
-                        borderWidth: 2,
-                        borderColor: "#FFFFFF",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.2,
-                        shadowRadius: 1,
-                        elevation: 2,
-                      }}
-                      pressedMarkerStyle={{
-                        backgroundColor: "#8E4F4F",
-                        height: 30,
-                        width: 30,
-                        borderRadius: 15,
-                      }}
-                      trackStyle={{
-                        height: 6,
-                        borderRadius: 3,
-                      }}
-                    />
-                  </View>
-                  <View style={styles.priceRangeLabels}>
-                    <Text style={styles.priceRangeLabel}>$0</Text>
-                    <Text style={styles.priceRangeLabel}>$5000</Text>
                   </View>
                 </View>
               </View>
@@ -495,9 +461,9 @@ const Categories: React.FC<CategoriesProps> = ({
                     Has Active Purchase Requests
                   </Text>
                   <Switch
-                    trackColor={{ false: "#ECECEC", true: "#A25E5E" }}
+                    trackColor={{ false: colors.border, true: colors.accent }}
                     thumbColor="#FFFFFF"
-                    ios_backgroundColor="#ECECEC"
+                    ios_backgroundColor={colors.border}
                     onValueChange={(value) =>
                       setLocalFilterOptions({
                         ...localFilterOptions,
@@ -537,7 +503,17 @@ export default Categories;
 /**
  * Styles for the Categories component layout and buttons.
  */
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  background: string;
+  border: string;
+  card: string;
+  cardMuted: string;
+  accent: string;
+  accentSoft: string;
+  textPrimary: string;
+  textSecondary: string;
+}) =>
+  StyleSheet.create({
   container: {
     paddingVertical: 15,
     // position: "relative",
@@ -556,13 +532,13 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5E3DC",
+    backgroundColor: colors.accentSoft,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
   },
   filterText: {
-    color: "#A25E5E",
+    color: colors.accent,
     fontSize: 12,
     fontWeight: "500",
     marginLeft: 4,
@@ -572,7 +548,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   viewAllText: {
-    color: "#4285F4",
+    color: colors.accent,
     fontSize: 12,
     fontWeight: "500",
   },
@@ -585,17 +561,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginHorizontal: 5,
     borderRadius: 20,
-    backgroundColor: "#F5E3DC",
+    backgroundColor: colors.cardMuted,
     borderWidth: 1,
-    borderColor: "#EADFD2",
+    borderColor: colors.border,
   },
   selectedCategory: {
-    backgroundColor: "#A25E5E",
-    borderColor: "#A25E5E",
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   categoryText: {
     fontSize: 14,
-    color: "#4A4A4A",
+    color: colors.textPrimary,
   },
   selectedCategoryText: {
     color: "white",
@@ -610,14 +586,14 @@ const styles = StyleSheet.create({
   },
   viewAllCategoriesText: {
     fontSize: 14,
-    color: "#555",
+    color: colors.textSecondary,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#FFF9F0",
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 30,
@@ -629,12 +605,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: colors.border,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#4A4A4A",
+    color: colors.textPrimary,
   },
   modalCategoryItem: {
     flexDirection: "row",
@@ -642,17 +618,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.border,
   },
   modalSelectedCategory: {
-    backgroundColor: "#f7f9fe",
+    backgroundColor: colors.accentSoft,
   },
   modalCategoryText: {
     fontSize: 16,
-    color: "#4A4A4A",
+    color: colors.textPrimary,
   },
   modalSelectedCategoryText: {
-    color: "#A25E5E",
+    color: colors.accent,
     fontWeight: "500",
   },
   filterScrollView: {
@@ -663,7 +639,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.border,
   },
   filterSectionTitle: {
     fontSize: 16,
@@ -675,23 +651,9 @@ const styles = StyleSheet.create({
   },
   priceLabel: {
     fontSize: 14,
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: "center",
-  },
-  sliderContainer: {
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  priceRangeLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 5,
-  },
-  priceRangeLabel: {
-    fontSize: 12,
-    color: "#888",
   },
   customPriceInputs: {
     flexDirection: "row",
@@ -702,9 +664,9 @@ const styles = StyleSheet.create({
   priceInput: {
     width: 70,
     padding: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: colors.border,
     borderRadius: 6,
     fontSize: 14,
     textAlign: "center",
@@ -721,17 +683,17 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     borderRadius: 16,
-    backgroundColor: "#F5E3DC",
+    backgroundColor: colors.cardMuted,
     borderWidth: 1,
-    borderColor: "#EADFD2",
+    borderColor: colors.border,
   },
   selectedSortOption: {
-    backgroundColor: "#A25E5E",
-    borderColor: "#A25E5E",
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   sortOptionText: {
     fontSize: 14,
-    color: "#4A4A4A",
+    color: colors.textPrimary,
   },
   selectedSortOptionText: {
     color: "white",
@@ -744,7 +706,7 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 14,
-    color: "#333",
+    color: colors.textPrimary,
   },
   filterActions: {
     flexDirection: "row",
@@ -752,25 +714,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: colors.border,
   },
   resetButton: {
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: colors.border,
   },
   resetButtonText: {
     fontSize: 14,
-    color: "#333",
+    color: colors.textPrimary,
     fontWeight: "500",
   },
   applyButton: {
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
-    backgroundColor: "#A25E5E",
+    backgroundColor: colors.accent,
   },
   applyButtonText: {
     color: "white",

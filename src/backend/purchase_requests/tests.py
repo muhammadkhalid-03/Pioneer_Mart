@@ -1,6 +1,5 @@
 from django.test import TestCase
 from .models import PurchaseRequest
-from django.db import models
 from items.models import Listing
 from categories.models import Category
 from django.contrib.auth.models import User
@@ -92,11 +91,11 @@ class PurchaseRequestSerializerTestCase(TestCase):
         self.assertEqual(
             serializer.data,
             {
-                "id": self.testPurchaseReq1.id,
+                "id": self.testPurchaseReq1.pk,
                 "listing": list_serial.data,
-                "requester": self.user1.id,
+                "requester": self.user1.pk,
                 "requester_name": "testuser",
-                "seller": self.user1.id,
+                "seller": self.user1.pk,
                 "seller_name": "testuser",
                 "created_at": serializer.data["created_at"],
                 "is_active": True,

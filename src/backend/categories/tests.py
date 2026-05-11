@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.urls import reverse
 from .models import Category
 from .serializers import CategorySerializer
 
@@ -21,7 +20,7 @@ class CategorySerializerTest(TestCase):
     def test_serialization(self):
         category = Category.objects.create(name="Furniture")
         serializer = CategorySerializer(category)
-        self.assertEqual(serializer.data, {"id": category.id, "name": "Furniture"})
+        self.assertEqual(serializer.data, {"id": category.pk, "name": "Furniture"})
 
     def test_deserialization(self):
         data = {"name": "Garden"}
@@ -29,6 +28,3 @@ class CategorySerializerTest(TestCase):
         self.assertTrue(serializer.is_valid())
         category = serializer.save()
         self.assertEqual(category.name, "Garden")
-
-
-

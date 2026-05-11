@@ -1,16 +1,21 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// putting this api service so that we don't need another api file
+import axios from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
+import Constants from "expo-constants";
+import {
+  notifySessionInvalidated,
+  notifyTokensRefreshed,
+} from "@/utils/auth-token-bridge";
+import { getAppVersionHeaderValue } from "@/utils/client-version";
+import { presentForceUpgradeFromApiError } from "@/utils/force-upgrade";
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
   previous: string | null;
   results: T[];
 }
-
-import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-// putting this api service so that we don't need another api file
-import axios from "axios";
-import Constants from "expo-constants";
-import { getErrorMessage } from "@/utils/errorUtils";
 
 const api = axios.create({
   baseURL: Constants?.expoConfig?.extra?.apiUrl,
@@ -19,16 +24,77 @@ const api = axios.create({
     Accept: "application/json",
   },
 });
+
+async function clearStoredAuth() {
+  await AsyncStorage.multiRemove(["authToken", "refreshToken"]);
+}
+
+/** Single in-flight refresh so parallel 401s share one rotation. */
+let refreshInFlight: Promise<string | null> | null = null;
+
+function refreshAccessTokenOnce(): Promise<string | null> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const refreshToken = await AsyncStorage.getItem("refreshToken");
+        if (!refreshToken) {
+          await clearStoredAuth();
+          notifySessionInvalidated();
+          return null;
+        }
+        const response = await axios.post(
+          `${Constants?.expoConfig?.extra?.apiUrl}/api/v1/auth/token/refresh/`,
+          { refresh: refreshToken },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "X-App-Version": getAppVersionHeaderValue(),
+            },
+          }
+        );
+        const { access, refresh: newRefresh } = response.data;
+        const refreshToStore = newRefresh ?? refreshToken;
+        await AsyncStorage.setItem("authToken", access);
+        await AsyncStorage.setItem("refreshToken", refreshToStore);
+        notifyTokensRefreshed(access, refreshToStore);
+        return access;
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          if (status === 401 || status === 403) {
+            await clearStoredAuth();
+            notifySessionInvalidated();
+          }
+        }
+        return null;
+      }
+    })().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+function isRefreshTokenRequest(config: InternalAxiosRequestConfig) {
+  const path = config.url ?? "";
+  return path.includes("token/refresh");
+}
+
 try {
   // request interceptor to add auth token to requests
   api.interceptors.request.use(
     async (config) => {
+      config.headers["X-App-Version"] = getAppVersionHeaderValue();
       try {
         const token = await AsyncStorage.getItem("authToken");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-      } catch (error) {}
+      } catch {}
+      // Let React Native set Content-Type (with boundary) for multipart uploads
+      if (config.data instanceof FormData) {
+        delete config.headers["Content-Type"];
+      }
       return config;
     },
     (error) => Promise.reject(error)
@@ -38,60 +104,43 @@ try {
   api.interceptors.response.use(
     (response) => response,
     async (error) => {
-      const originalRequest = error.config;
+      const originalRequest = error.config as
+        | (InternalAxiosRequestConfig & { _retry?: boolean })
+        | undefined;
 
-      // if error is 401 and we haven't tried to refresh token yet
+      if (!originalRequest) {
+        return Promise.reject(error);
+      }
+
+      const resData = error.response?.data;
+      const upgradeCode =
+        resData &&
+        typeof resData === "object" &&
+        "code" in resData &&
+        (resData as { code?: string }).code === "upgrade_required";
+      if (error.response?.status === 426 || upgradeCode) {
+        presentForceUpgradeFromApiError(resData);
+        return Promise.reject(error);
+      }
+
+      if (error.response?.status === 401 && isRefreshTokenRequest(originalRequest)) {
+        await clearStoredAuth();
+        notifySessionInvalidated();
+        return Promise.reject(error);
+      }
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
-
-        try {
-          const refreshToken = await AsyncStorage.getItem("refreshToken");
-          if (!refreshToken) {
-            // no refresh token so redirect to login
-            return Promise.reject(error);
-          }
-
-          // attempt to refreesh token
-          const response = await axios.post(
-            `${Constants?.expoConfig?.extra?.apiUrl}/otpauth/refresh/`,
-            { refresh: refreshToken },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const { access, refresh } = response.data;
-
-          // store the new tokens
-          await AsyncStorage.setItem("authToken", access);
-          if (refresh) {
-            await AsyncStorage.setItem("refreshToken", refresh);
-          }
-
-          // retry the original request with the new token
-          originalRequest.headers.Authorization = `Bearer ${access}`;
-          return axios(originalRequest);
-        } catch (refreshError) {
-          // if the refresh fails then redirect to login
-          // TODO: Maybe dispatch an action to clear auth state
-          return Promise.reject(refreshError);
+        const access = await refreshAccessTokenOnce();
+        if (!access) {
+          return Promise.reject(error);
         }
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return api(originalRequest);
       }
 
-      // 2. show a user-friendly message for unhandled error
-      //    but don't show toast for 401 errors we're already handling
-      if (!(error.response?.status === 401 && !originalRequest._retry)) {
-        Toast.show({
-          type: "error",
-          text1: "Error",
-          text2: getErrorMessage(error) as string,
-          position: "bottom",
-          visibilityTime: 4000,
-        });
-      }
-
-      // 3. Return the rejected promise so components can handle specific errors if needed
+      // Errors are surfaced by callers (toasts/alerts) to avoid duplicate messages.
       return Promise.reject(error);
     }
   );

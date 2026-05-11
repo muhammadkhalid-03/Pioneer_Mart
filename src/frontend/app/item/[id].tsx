@@ -16,28 +16,34 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
 import { FontAwesome } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import ItemPurchaseModal from "@/components/ItemPurchaseModal";
-import { useUserStore } from "@/stores/userStore";
+import ItemPurchaseModal from "@/components/item-purchase-modal";
+import { useUserStore } from "@/stores/user-store";
 import React from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useAuth } from "../contexts/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ZoomModal from "@/components/ZoomModal";
-import { useItemsStore } from "@/stores/useSearchStore";
-import ReportModal from "@/components/ReportModal";
-import Constants from "expo-constants";
-import Toast from "react-native-toast-message";
-import api from "@/types/api";
+import ZoomModal from "@/components/zoom-modal";
+import { useItemsStore } from "@/stores/listings/use-items-store";
+import ReportModal from "@/components/report-modal";
+import { showAppToast } from "@/utils/app-toast";
+import { listingsApi } from "@/services/listings-api";
+import { getErrorMessage } from "@/utils/error-utils";
+import { useTheme } from "../contexts/theme-context";
 
 const { width, height } = Dimensions.get("window");
 
 const ItemDetails = () => {
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const router = useRouter();
-  const { id, item: itemString, source, refreshKey } = useLocalSearchParams();
-  const [item, setItem] = useState(
-    itemString ? JSON.parse(itemString as string) : null
-  );
+  const { id, item: itemString, source } = useLocalSearchParams();
+  const [item, setItem] = useState(() => {
+    if (!itemString) return null;
+    try {
+      return JSON.parse(itemString as string);
+    } catch {
+      return null;
+    }
+  });
   const hasFetched = useRef(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
@@ -46,7 +52,6 @@ const ItemDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
   const [isZoomVisible, setIsZoomVisible] = useState(false);
-  const { authToken } = useAuth();
   const { userData } = useUserStore();
   const { toggleReport } = useItemsStore();
 
@@ -77,23 +82,23 @@ const ItemDetails = () => {
 
   // ensure that the images array is only recalculated if the getItemImages function changes(which only happens when item changes)
   const images = React.useMemo(() => getItemImages(), [getItemImages]);
+  const selectedImageUri = images[currentImageIndex] ?? item?.image ?? null;
+
+  useEffect(() => {
+    if (currentImageIndex >= images.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [currentImageIndex, images.length]);
 
   // fetch the latest item data from the API
-  const fetchItemDetails = async () => {
+  const fetchItemDetails = useCallback(async () => {
     if (!id) {
       setIsLoading(false);
       return;
     }
     try {
       setIsLoading(true);
-      const cleanToken = authToken?.trim();
-      const response = await api.get(`${BASE_URL}/api/items/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${cleanToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
+      const response = await listingsApi.getItem(id as string);
       const fetchedItem = response.data;
       setItem(fetchedItem);
       if (
@@ -118,7 +123,7 @@ const ItemDetails = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, userData]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -131,7 +136,7 @@ const ItemDetails = () => {
         // reset the ref when the screen loses focus
         hasFetched.current = false;
       };
-    }, [id, authToken])
+    }, [fetchItemDetails])
   );
 
   const openModal = () => {
@@ -149,23 +154,14 @@ const ItemDetails = () => {
     }
     try {
       setIsLoading(true);
-      const cleanToken = authToken?.trim();
-      const response = await api.delete(
-        `${BASE_URL}/api/items/${id}/delete_item/`,
-        {
-          headers: {
-            Authorization: `Bearer ${cleanToken}`,
-          },
-          timeout: 10000,
-        }
-      );
-      Toast.show({
+      await listingsApi.deleteListing(id as string);
+      showAppToast({
         type: "success",
         text1: "Item deleted successfully",
       });
       router.replace("/(tabs)");
-    } catch (error) {
-      Toast.show({
+    } catch {
+      showAppToast({
         type: "error",
         text1: "Unable to delete item. Please try again",
       });
@@ -174,32 +170,17 @@ const ItemDetails = () => {
     }
   };
 
-  const handlePurchaseRequest = React.useCallback(
-    async (authToken: string | null) => {
-      if (!item) return;
-
-      try {
-        const cleanToken = authToken?.trim();
-        const response = await api.post(
-          `${BASE_URL}/api/items/${item.id}/request_purchase/`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${cleanToken}`,
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }
-        );
-        setHasRequestedItem(true); //update state of item for user
-        openModal(); // show the user that the request was sent.
-      } catch (error) {
-        console.error("Error requesting purchase:", error);
-        alert("Failed to send purchase request. Please try again.");
-      }
-    },
-    [item, authToken]
-  );
+  const handlePurchaseRequest = React.useCallback(async () => {
+    if (!item) return;
+    try {
+      await listingsApi.requestPurchase(item.id);
+      setHasRequestedItem(true);
+      openModal();
+    } catch (error) {
+      console.error("Error requesting purchase:", error);
+      alert("Failed to send purchase request. Please try again.");
+    }
+  }, [item]);
 
   // Find out if the user is the owner of the item
   const isOwner = userData && item && item.seller === userData.id;
@@ -216,22 +197,25 @@ const ItemDetails = () => {
   // render each image in the carousel
   const renderImageItem = ({ item: imageUrl }: { item: string }) => {
     return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={styles.itemImage}
-        resizeMode="cover"
-      />
+      <View style={styles.imageSlide}>
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.itemImage}
+          resizeMode="contain"
+        />
+      </View>
     );
   };
 
   // Render pagination dots
   const renderPaginationDots = () => {
+    if (images.length <= 1) {
+      return null;
+    }
+
     return (
       <View style={styles.paginationContainer}>
-        {(images.length > 0
-          ? images
-          : ["src/frontend/assets/images/defaultpic.png"]
-        ).map((_, index) => (
+        {images.map((_, index) => (
           <View
             key={index}
             style={[
@@ -250,16 +234,7 @@ const ItemDetails = () => {
     setChatLoading(true);
 
     try {
-      const cleanToken = authToken?.trim();
-      const response = await api.get(
-        `${BASE_URL}/api/chat/get-or-create-room/`,
-        {
-          params: { user_id: item.seller, item_id: item.id }, // Assuming item.seller contains the seller's user id
-          headers: {
-            Authorization: `Bearer ${cleanToken}`,
-          },
-        }
-      );
+      const response = await listingsApi.resolveChatRoom(item.seller, item.id);
       const chatRoom = response.data.room;
       if (!chatRoom || !chatRoom.id) {
         throw new Error("Invalid room data received");
@@ -278,7 +253,7 @@ const ItemDetails = () => {
       });
     } catch (error) {
       console.error("Error starting chat:", error);
-      Alert.alert("Error", "Failed to start a chat. Please try again.");
+      Alert.alert("Error", getErrorMessage(error));
     } finally {
       setChatLoading(false);
     }
@@ -300,7 +275,7 @@ const ItemDetails = () => {
         <ActivityIndicator
           testID="activity-indicator"
           size="large"
-          color="#3498db"
+          color={colors.accent}
         />
       </View>
     );
@@ -337,7 +312,7 @@ const ItemDetails = () => {
           <ZoomModal
             isVisible={isZoomVisible}
             onClose={() => setIsZoomVisible(false)}
-            item={item} // Use the updated item
+            imageUri={selectedImageUri}
           />
         )}
         <ScrollView
@@ -388,7 +363,7 @@ const ItemDetails = () => {
                 <FontAwesome
                   name="user"
                   size={16}
-                  color="#888"
+                  color={colors.textSecondary}
                   style={styles.infoIcon}
                 />
                 <Text style={styles.infoText}>{item.seller_name}</Text>
@@ -397,7 +372,7 @@ const ItemDetails = () => {
                 <FontAwesome
                   name="calendar"
                   size={16}
-                  color="#888"
+                  color={colors.textSecondary}
                   style={styles.infoIcon}
                 />
                 <Text style={styles.infoText}>
@@ -410,7 +385,7 @@ const ItemDetails = () => {
               <FontAwesome
                 name="tag"
                 size={16}
-                color="#888"
+                color={colors.textSecondary}
                 style={styles.infoIcon}
               />
               <Text style={styles.categoryText}>{item.category_name}</Text>
@@ -467,7 +442,7 @@ const ItemDetails = () => {
                         styles.purchaseRequestButton,
                         hasRequestedItem && styles.disabledButton,
                       ]}
-                      onPress={() => handlePurchaseRequest(authToken)}
+                      onPress={() => handlePurchaseRequest()}
                       disabled={hasRequestedItem}
                     >
                       <FontAwesome
@@ -515,11 +490,11 @@ const ItemDetails = () => {
                       onPress={async (e) => {
                         e.stopPropagation();
                         try {
-                          if (!item.is_reported) {
+                          if (!hasReportedItem) {
                             setIsReportModalVisible(true);
                           } else {
-                            await toggleReport(item.id, authToken || "", "");
-                            setHasReportedItem(true);
+                            await toggleReport(item.id, "");
+                            setHasReportedItem(false);
                           }
                         } catch (error) {
                           console.error("Error toggling report:", error);
@@ -554,16 +529,30 @@ const ItemDetails = () => {
 
 export default ItemDetails;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  background: string;
+  card: string;
+  cardMuted: string;
+  accent: string;
+  accentMuted: string;
+  accentSoft: string;
+  accentContrast: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  success: string;
+  disabled: string;
+}) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.background,
   },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -572,10 +561,15 @@ const styles = StyleSheet.create({
     width: width,
     height: height * 0.4,
     position: "relative",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.cardMuted,
+  },
+  imageSlide: {
+    width: width,
+    height: "100%",
+    backgroundColor: colors.cardMuted,
   },
   itemImage: {
-    width: width,
+    width: "100%",
     height: "100%",
   },
   paginationContainer: {
@@ -591,10 +585,10 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: "rgba(255, 255, 255, 0.55)",
   },
   paginationDotActive: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     width: 12,
     height: 12,
     borderRadius: 6,
@@ -615,10 +609,10 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    marginTop: -20,
+    marginTop: 0,
     flex: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -3 },
@@ -635,13 +629,13 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#333",
+    color: colors.textPrimary,
     flex: 1,
   },
   price: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#22a45d",
+    color: colors.accent,
   },
   infoRow: {
     flexDirection: "row",
@@ -657,12 +651,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 15,
-    color: "#666",
+    color: colors.textSecondary,
   },
   categoryContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f0f4f8",
+    backgroundColor: colors.accentSoft,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -671,7 +665,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    color: "#3498db",
+    color: colors.accent,
     fontWeight: "600",
     marginLeft: 6,
   },
@@ -681,19 +675,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   descriptionText: {
     fontSize: 16,
-    color: "#555",
+    color: colors.textSecondary,
     lineHeight: 24,
   },
   actionsContainer: {
     gap: 12,
   },
   editButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: colors.accent,
     paddingVertical: 14,
     borderRadius: 10,
     flexDirection: "row",
@@ -706,7 +700,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   deleteButton: {
-    backgroundColor: "#e74c3c",
+    backgroundColor: colors.accentMuted,
     paddingVertical: 14,
     borderRadius: 10,
     flexDirection: "row",
@@ -719,7 +713,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   purchaseRequestButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: colors.accent,
     paddingVertical: 14,
     borderRadius: 10,
     flexDirection: "row",
@@ -732,7 +726,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   reportItemButton: {
-    backgroundColor: "#e74c3c",
+    backgroundColor: colors.accentMuted,
     paddingVertical: 14,
     borderRadius: 10,
     flexDirection: "row",
@@ -745,10 +739,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   disabledButton: {
-    backgroundColor: "#95a5a6",
+    backgroundColor: colors.disabled,
   },
   chatButton: {
-    backgroundColor: "#22a45d",
+    backgroundColor: colors.success,
     paddingVertical: 14,
     borderRadius: 10,
     flexDirection: "row",
@@ -761,7 +755,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonText: {
-    color: "white",
+    color: colors.accentContrast,
     fontSize: 16,
     fontWeight: "600",
   },

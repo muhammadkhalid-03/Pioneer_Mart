@@ -8,3 +8,6 @@
 
 ## Sprint 03 Planning:
 - https://docs.google.com/document/d/1UiDCxv4_hNaubbS4gqxYO7Mnt1fhgr1E-YzRhmYc7ik/edit?tab=t.0
+
+## Demo 1 Presentation:
+- https://docs.google.com/presentation/d/1F1zSEmYi_UvXe6q9vbU-ysHed6kHSSnltc__OpDSSbs/edit?usp=sharing

@@ -4,7 +4,7 @@ from .views import CategoryViewSet
 
 router = DefaultRouter()  # class that automatically generates URL patterns for ViewSets
 # if using ViewSet, this registers CategoryViewSet w/ router
-router.register(r"categories", CategoryViewSet)  # 'categories' is the base URL
+router.register(r"listing-categories", CategoryViewSet, basename="listing-categories")
 urlpatterns = [
     path(
         "", include(router.urls)

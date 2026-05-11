@@ -3,6 +3,26 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+class UserPushToken(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="push_token"
+    )
+    token = models.CharField(max_length=255, blank=True, null=True)
+    push_notifications_enabled = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "user_push_tokens"
+        verbose_name = "User Push Token"
+        verbose_name_plural = "User Push Tokens"
+
+    def __str__(self):
+        token_preview = (self.token[:3] + "...") if self.token else "none"
+        return f"{self.user.username} - {token_preview} - Push (Enabled: {self.push_notifications_enabled})"
+
+
 class NotificationType(models.TextChoices):
     PURCHASE = "purchase", "Purchase Request"
     CHAT = "chat", "Chat Message"

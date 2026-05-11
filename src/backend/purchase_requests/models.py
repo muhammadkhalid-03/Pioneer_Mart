@@ -5,7 +5,6 @@
 # Import Modules
 from django.db import models
 from django.db.models import Q, UniqueConstraint
-from notifications.models import Notification, NotificationType
 from items.models import Listing
 from django.contrib.auth.models import User
 
@@ -28,7 +27,7 @@ class PurchaseRequest(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
         ("accepted", "Accepted"),
-        ("declines", "Declined"),
+        ("declined", "Declined"),
         ("cancelled", "Cancelled"),
     )
 
@@ -49,19 +48,9 @@ class PurchaseRequest(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
         if not self.seller:
             self.seller = self.listing.seller
         super().save(*args, **kwargs)
-
-        # create a notification for the purchase request
-        if is_new:
-            Notification.objects.create(
-                recipient=self.listing.seller,
-                type=NotificationType.PURCHASE,
-                message=f"{self.requester.username} requested to buy your item '{self.listing.title}'",
-                related_item=self.listing.title,
-            )
 
     class Meta:
         """

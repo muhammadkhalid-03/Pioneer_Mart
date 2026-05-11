@@ -1,9 +1,6 @@
 from django.test import TestCase
 from .models import OTP
-from django.db import models
-from datetime import datetime, timedelta, timezone
-from django.contrib.auth.models import User
-from .serializers import EmailSerializer, OTPVerificationSerializer, TokenSerializer
+from .serializers import OTPVerificationSerializer
 
 
 class OTPAuthTestCase(TestCase):

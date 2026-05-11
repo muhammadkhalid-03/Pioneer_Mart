@@ -4,3 +4,4 @@ env
 */__pycache__/
 */migrations/__pycache__/
 env
+*.pyc

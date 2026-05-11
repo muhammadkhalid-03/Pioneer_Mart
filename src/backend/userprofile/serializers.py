@@ -7,15 +7,18 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserProfile
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for the UserProfile model.
     Includes:
     - is_verified: Boolean field indicating if the user's email/account has been verified.
     """
+
     class Meta:
         model = UserProfile
         fields = ["is_verified"]
+
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -26,6 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
     - email: The user's email address
     - profile: Embedded profile data including verification status
     """
+
     profile = UserProfileSerializer(read_only=True)
 
     class Meta:

@@ -77,32 +77,26 @@ class ItemSerializer(serializers.ModelSerializer):
         return None
 
     def get_is_favorited(self, obj):
-        """
-        Checks if the listing is favorited by the current user.
-
-        Args:
-            obj (Listing): The Listing object being serialized.
-
-        Returns:
-            bool: True if the listing is favorited, False otherwise.
-        """
-        user = self.context.get("request").user
-        return obj in user.profile.favorites.all()
+        request = self.context.get("request")
+        if request is None or not request.user.is_authenticated:
+            return False
+        if not hasattr(self, "_favorite_ids"):
+            self._favorite_ids = set(
+                request.user.profile.favorites.values_list("pk", flat=True)
+            )
+        return obj.pk in self._favorite_ids
 
     def get_is_reported(self, obj):
-        """
-        Checks if the listing is reported by the current user.
-
-        Args:
-            obj (Listing): The Listing object being serialized.
-
-        Returns:
-            bool: True if the listing is reported, False otherwise.
-        """
         request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            return ItemReport.objects.filter(item=obj, reporter=request.user).exists()
-        return False
+        if not request or not request.user.is_authenticated:
+            return False
+        if not hasattr(self, "_reported_ids"):
+            self._reported_ids = set(
+                ItemReport.objects.filter(reporter=request.user).values_list(
+                    "item_id", flat=True
+                )
+            )
+        return obj.pk in self._reported_ids
 
     def get_purchase_requesters(self, obj):
         requesters = obj.get_purchase_requesters()

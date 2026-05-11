@@ -1,5 +1,3 @@
-import { ItemType, UserInfo } from "./types";
-
 export interface User {
   id: string;
   username: string;
@@ -26,17 +24,9 @@ export interface ChatRoom {
   last_message_time?: string;
 }
 
-export interface WebSocketMessage {
-  message: string;
-  user_id?: number;
-  receiver_id?: number;
-  username?: string;
-  timestamp?: string;
-}
-
 export interface ChatScreenRouteParams {
   roomId: string;
   roomName: string;
 }
 
-export interface ChatRoomsScreenRouteParams {}
+export type ChatRoomsScreenRouteParams = Record<string, never>;

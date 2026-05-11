@@ -5,11 +5,12 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { StatusBar, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { NotificationProvider } from "./contexts/NotificationContext";
+import { AuthProvider } from "./contexts/auth-context";
+import { ThemeProvider } from "./contexts/theme-context";
+import { NotificationProvider } from "./contexts/notification-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
+import { theme } from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync().catch(console.warn);
 
@@ -80,7 +81,7 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#FFF9F0",
+          backgroundColor: theme.colors.background,
         }}
       >
         <Text style={{ fontSize: 18 }}>
@@ -91,7 +92,7 @@ export default function RootLayout() {
   }
 
   if (!loaded || !splashHidden) {
-    return <View style={{ flex: 1, backgroundColor: "#FFF9F0" }} />;
+    return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   }
 
   return (
@@ -99,7 +100,10 @@ export default function RootLayout() {
       <AuthProvider>
         <NotificationProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFF9F0" />
+            <StatusBar
+              barStyle="dark-content"
+              backgroundColor={theme.colors.background}
+            />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen
                 name="(tabs)"
@@ -111,7 +115,7 @@ export default function RootLayout() {
               />
             </Stack>
           </GestureHandlerRootView>
-          <Toast />
+          <Toast position="top" topOffset={56} visibilityTime={4000} />
         </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>

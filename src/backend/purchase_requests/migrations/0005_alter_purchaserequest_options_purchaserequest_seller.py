@@ -6,20 +6,24 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('purchase_requests', '0004_alter_purchaserequest_unique_together_and_more'),
+        ("purchase_requests", "0004_alter_purchaserequest_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='purchaserequest',
-            options={'ordering': ['-created_at']},
+            name="purchaserequest",
+            options={"ordering": ["-created_at"]},
         ),
         migrations.AddField(
-            model_name='purchaserequest',
-            name='seller',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='received_purchase_requests', to=settings.AUTH_USER_MODEL),
+            model_name="purchaserequest",
+            name="seller",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="received_purchase_requests",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

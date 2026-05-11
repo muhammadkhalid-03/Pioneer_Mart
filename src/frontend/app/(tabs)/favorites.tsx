@@ -2,67 +2,58 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { Stack } from "expo-router";
 
-import { useAuth } from "../contexts/AuthContext";
-import { useItemsStore } from "@/stores/useSearchStore";
-import ProductList from "@/components/ProductList";
-import Header from "@/components/Header";
-import Categories from "@/components/Categories";
+import { useItemsStore } from "@/stores/listings/use-items-store";
+import ProductList from "@/components/product-list";
+import Header from "@/components/header";
+import Categories from "@/components/categories";
 import { Alert, StyleSheet, TouchableOpacity, View, Text } from "react-native";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user-store";
 import { useFocusEffect } from "@react-navigation/native";
-import Constants from "expo-constants";
-import { useTheme } from "../contexts/ThemeContext";
-import api from "@/types/api";
+import { listingsApi } from "@/services/listings-api";
+import { useTheme } from "../contexts/theme-context";
+import { listingFromRow } from "@/stores/listings/row-helpers";
+import type { ItemType } from "@/types/types";
 
 const FavoritesScreen = () => {
   const { colors } = useTheme();
-  const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+  const styles = createStyles(colors);
   const { screens, setActiveScreen, loadItems, loadCategories, categories } =
     useItemsStore();
-  const { authToken } = useAuth();
 
-  const screenId = "favorites"; // current screen state
-  const { filteredItems, isLoading } = screens[screenId];
+  const screenId = "favorites";
+  const { items, isLoading } = screens[screenId];
   const [isRequesting, setIsRequesting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const { userData } = useUserStore();
 
   const notRequestedItems = useMemo(() => {
-    return filteredItems.filter(
-      (item) =>
+    return items
+      .map(listingFromRow)
+      .filter((item): item is ItemType => Boolean(item))
+      .filter((item) =>
         !item.purchase_requesters?.some(
           (requester: any) => requester.id === userData?.id
         )
-    );
-  }, [filteredItems, userData, refreshTrigger]);
+      );
+  }, [items, userData]);
+
   useFocusEffect(
     useCallback(() => {
       setActiveScreen(screenId);
-      loadItems(screenId, authToken || "");
-      loadCategories(authToken || "");
-    }, [authToken])
+      loadItems(screenId);
+      loadCategories();
+    }, [loadCategories, loadItems, setActiveScreen])
   );
 
   const handleRequestAllItems = async () => {
-    if (!authToken || notRequestedItems.length < 1) return;
+    if (notRequestedItems.length < 1) return;
     setIsRequesting(true);
     let successCount = 0;
     let failCount = 0;
     try {
       for (const item of notRequestedItems) {
         try {
-          await api.post(
-            `${BASE_URL}/api/items/${item.id}/request_purchase/`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${authToken.trim()}`,
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-            }
-          );
+          await listingsApi.requestPurchase(item.id);
           successCount++;
         } catch (error) {
           console.error(
@@ -72,16 +63,13 @@ const FavoritesScreen = () => {
           failCount++;
         }
       }
-      // show the success message
       setRequestSuccess(true);
-      setTimeout(() => setRequestSuccess(false), 3000); // hide the message after 3 seconds
+      setTimeout(() => setRequestSuccess(false), 3000);
     } catch (error) {
       console.error("Error in batch request process:", error);
     } finally {
       setIsRequesting(false);
-      await loadItems(screenId, authToken || "");
-      setRefreshTrigger((prev) => !prev);
-      // send alert with the summary
+      await loadItems(screenId);
       if (failCount > 0) {
         Alert.alert(
           "Error:",
@@ -103,7 +91,7 @@ const FavoritesScreen = () => {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <Categories screenId={screenId} categories={categories} />
         <ProductList
-          items={filteredItems}
+          items={items}
           isLoading={isLoading}
           source={"favorites"}
         />
@@ -138,7 +126,13 @@ const FavoritesScreen = () => {
 };
 export default FavoritesScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  accent: string;
+  accentContrast: string;
+  disabled: string;
+  success: string;
+}) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
@@ -150,7 +144,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   floatingButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: colors.accent,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25, // More rounded corners
@@ -161,21 +155,21 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   floatingButtonDisabled: {
-    backgroundColor: "#88c4f8",
+    backgroundColor: colors.disabled,
   },
   floatingButtonText: {
-    color: "white",
+    color: colors.accentContrast,
     fontWeight: "600",
     fontSize: 14,
   },
   successMessageContainer: {
-    backgroundColor: "rgba(76, 175, 80, 0.9)",
+    backgroundColor: colors.success,
     padding: 8,
     borderRadius: 15,
     marginBottom: 10,
   },
   successMessage: {
-    color: "white",
+    color: colors.accentContrast,
     fontWeight: "500",
     fontSize: 12,
   },

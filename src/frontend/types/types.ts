@@ -17,6 +17,15 @@ export interface ItemType {
   // purchase_requesters?: Array<{ id: number; username: string }>;
 }
 
+/** API row from GET `/api/v1/reports/mine/` (nested listing). */
+export interface ReportMineEntry {
+  id: number;
+  item: ItemType | null;
+  reason: string;
+  created_at: string;
+  resolved: boolean;
+}
+
 export interface PurchaseRequest {
   id: number;
   listing: ItemType;
@@ -68,3 +77,10 @@ export interface NotificationContextType {
   refreshUnreadCount: () => void;
   resetUnreadCount: () => void;
 }
+
+export type AppNotification = {
+  id: number;
+  type: "purchase" | "chat";
+  message: string;
+  time: string;
+};

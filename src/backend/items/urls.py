@@ -4,7 +4,7 @@ from .views import ItemViewSet
 
 router = DefaultRouter()
 router.register(
-    r"items", ItemViewSet, basename="items"
+    r"listings", ItemViewSet, basename="listings"
 )  # if using ViewSet!! this registers all CRUD operations for items
 # POST /items/{id}/toggle_favorite/ - Toggles favorite status for a listing.
 # GET /items/favorites/ - Retrieves all favorite listings.

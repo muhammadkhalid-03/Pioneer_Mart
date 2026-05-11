@@ -4,15 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('purchase_requests', '0001_initial'),
+        ("purchase_requests", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='purchaserequest',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('declines', 'Declined'), ('cancelled', 'Cancelled')], default='pending', max_length=10),
+            model_name="purchaserequest",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Pending"),
+                    ("accepted", "Accepted"),
+                    ("declines", "Declined"),
+                    ("cancelled", "Cancelled"),
+                ],
+                default="pending",
+                max_length=10,
+            ),
         ),
     ]

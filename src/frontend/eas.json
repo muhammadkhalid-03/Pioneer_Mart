@@ -16,11 +16,16 @@
       "autoIncrement": true,
       "distribution": "store",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "image": "latest"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6745501189"
+      }
+    }
   }
 }

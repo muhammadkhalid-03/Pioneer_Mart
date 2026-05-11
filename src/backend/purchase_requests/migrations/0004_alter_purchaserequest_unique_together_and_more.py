@@ -4,18 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('purchase_requests', '0003_alter_purchaserequest_unique_together'),
+        ("purchase_requests", "0003_alter_purchaserequest_unique_together"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='purchaserequest',
+            name="purchaserequest",
             unique_together=set(),
         ),
         migrations.AddConstraint(
-            model_name='purchaserequest',
-            constraint=models.UniqueConstraint(condition=models.Q(('status', 'pending')), fields=('listing', 'requester'), name='unique_pending_purchase_request'),
+            model_name="purchaserequest",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("status", "pending")),
+                fields=("listing", "requester"),
+                name="unique_pending_purchase_request",
+            ),
         ),
     ]

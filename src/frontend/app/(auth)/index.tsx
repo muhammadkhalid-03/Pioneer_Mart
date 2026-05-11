@@ -5,28 +5,24 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Dimensions,
   Linking,
 } from "react-native";
 import { router, Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
-import InputField from "@/components/InputField";
-import TCModal from "@/components/TCModal";
-import { useAuth } from "../contexts/AuthContext";
-import Constants from "expo-constants";
-import { useTheme } from "../contexts/ThemeContext";
+import InputField from "@/components/input-field";
+import TCModal from "@/components/tc-modal";
+import { useAuth } from "../contexts/auth-context";
+import { useTheme } from "../contexts/theme-context";
 import { Ionicons } from "@expo/vector-icons";
 import api from "@/types/api";
+import { getErrorMessage } from "@/utils/error-utils";
 
-type Props = {};
+type Props = Record<string, never>;
 
-const { width } = Dimensions.get("window");
-
-const WelcomeScreen = (props: Props) => {
+const WelcomeScreen = (_props: Props) => {
   const [email, setEmail] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [modalVisible, setModalVisible] = useState(true); // this needs to show the modal on first load
@@ -59,30 +55,15 @@ const WelcomeScreen = (props: Props) => {
     }
 
     try {
-      const OTP_URL = `${Constants.expoConfig?.extra?.apiUrl}/otpauth/request-otp/`;
       const fullEmail = email.trim() + "@grinnell.edu";
-      await api.post(
-        OTP_URL,
-        {
-          email: fullEmail,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      await api.post("/api/v1/auth/otp/request/", { email: fullEmail });
       router.push({
-        pathname: "/(auth)/OtpScreen",
+        pathname: "/(auth)/otp-screen",
         params: { email: fullEmail },
       });
     } catch (error) {
       console.error("Error:", error);
-      Alert.alert(
-        "Authentication Error",
-        "Failed to send verification code. Please try again later."
-      );
+      Alert.alert("Authentication Error", getErrorMessage(error));
     }
   };
 

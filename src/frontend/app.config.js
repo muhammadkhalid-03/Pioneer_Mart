@@ -4,8 +4,9 @@ if (!process.env.BASE_URL) {
 module.exports = {
   expo: {
     name: "PioneerMart",
+    owner: "pioneermart",
     slug: "frontend",
-    version: "1.0.1",
+    version: "1.0.25",
     orientation: "portrait",
     icon: "./assets/images/PioneerMartLogo-01.png",
     scheme: "myapp",
@@ -19,7 +20,7 @@ module.exports = {
     ios: {
       bundleIdentifier: "com.khalidmu.pioneermart",
       supportsTablet: false,
-      buildNumber: "1.0.9",
+      buildNumber: "1.0.25",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSAppTransportSecurity: {
@@ -35,7 +36,6 @@ module.exports = {
     },
     android: {
       package: "com.khalidmu.pioneermart",
-      versionCode: 2,
       adaptiveIcon: {
         foregroundImage: "./assets/images/PioneerMartLogo-01.png",
         backgroundColor: "#FFF9F0",
@@ -48,6 +48,7 @@ module.exports = {
     },
     plugins: [
       "expo-router",
+      "expo-notifications",
       [
         "expo-build-properties",
         {
@@ -71,6 +72,7 @@ module.exports = {
       eas: {
         projectId: "c0f86cce-05c6-48b1-8fcf-f44bd512d154"
       },
+      iosAppStoreUrl: process.env.IOS_APP_STORE_URL || "",
     }
   }
 }

@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect } from "react";
-import { Stack, useFocusEffect } from "expo-router";
-import { useAuth } from "../contexts/AuthContext";
-import { useItemsStore } from "@/stores/useSearchStore";
-import Header from "@/components/Header";
-import Categories from "@/components/Categories";
-import ProductList from "@/components/ProductList";
+import React, { useEffect } from "react";
+import { Stack } from "expo-router";
+import { useAuth } from "../contexts/auth-context";
+import { useItemsStore } from "@/stores/listings/use-items-store";
+import Header from "@/components/header";
+import Categories from "@/components/categories";
+import ProductList from "@/components/product-list";
 import { View } from "react-native";
-import { useTheme } from "../contexts/ThemeContext";
+import { useTheme } from "../contexts/theme-context";
 
 const HomeScreen = () => {
   const {
@@ -15,19 +15,17 @@ const HomeScreen = () => {
     loadItems,
     loadCategories,
     categories,
-    refreshItems,
   } = useItemsStore();
 
   const screenId = "home";
-  const { filteredItems, isLoading } = screens[screenId];
+  const { items, isLoading } = screens[screenId];
   const { colors } = useTheme();
-  const { authToken } = useAuth(); //auth context
-  // Load items and categories when component mounts
+  const { authToken } = useAuth();
   useEffect(() => {
     setActiveScreen(screenId);
-    loadItems(screenId, authToken || "");
-    loadCategories(authToken || "");
-  }, [authToken]);
+    loadItems(screenId);
+    loadCategories();
+  }, [authToken, loadCategories, loadItems, setActiveScreen]);
   return (
     <>
       <Stack.Screen
@@ -39,7 +37,7 @@ const HomeScreen = () => {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <Categories screenId={screenId} categories={categories} />
         <ProductList
-          items={filteredItems}
+          items={items}
           isLoading={isLoading}
           source={"home"}
         />

@@ -3,10 +3,12 @@ from . import views
 
 urlpatterns = [
     path(
-        "report/<int:item_id>/toggle_report/", views.toggle_report, name="toggle_report"
+        "listings/<int:item_id>/report-toggle/",
+        views.toggle_report,
+        name="toggle_report",
     ),
     path(
-        "report/reported-items/",
+        "reports/mine/",
         views.UserReportedItemsView.as_view(),
         name="reported_items",
     ),

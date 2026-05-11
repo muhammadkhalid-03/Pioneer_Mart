@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 # from userprofile.serializers import UserSerializer #TODO: uncomment when we make userprofile api
 

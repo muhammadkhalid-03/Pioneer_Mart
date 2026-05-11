@@ -19,7 +19,7 @@ class Listing(models.Model):
     description = models.TextField(
         blank=True, null=True
     )  # text field for long er than 255 characters, blank & null if user doesn't wanna add description
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(
         upload_to="item_images", blank=True, null=True
     )  # django will create item_images if folder doesn't exist
@@ -43,7 +43,9 @@ class Listing(models.Model):
         Returns:
             int: The number of active purchase requests.
         """
-        return self.purchase_requests.filter(is_active=True).count()
+        from purchase_requests.models import PurchaseRequest
+
+        return PurchaseRequest.objects.filter(listing=self, is_active=True).count()
 
     def get_purchase_requesters(self):
         """
@@ -87,4 +89,4 @@ class ItemImage(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Image {self.id}"
+        return f"Image {self.pk}"
