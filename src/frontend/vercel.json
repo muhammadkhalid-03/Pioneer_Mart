@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/chat/:path*", "destination": "/" },
+    { "source": "/item/:path*", "destination": "/" },
+    { "source": "/(tabs)/:path*", "destination": "/" },
+    {
+      "source": "/api/:path*",
+      "destination": "https://env-2325023.us.reclaim.cloud/api/:path*"
+    }
+  ]
+}
